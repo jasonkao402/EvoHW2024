@@ -1,22 +1,27 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, matplotlib.colors as mcolors
 import random
+from tqdm import trange
 
+RUNS = 10
 # Fitness function for the OneMax problem
 def fitness(individual):
-    return sum(individual)
+    return sum(individual)**2
 
 # Roulette wheel selection
-def roulette_wheel_selection(population, fitness_values):
+def roulette_wheel_selection(population, fitness_values, size=2):
     total_fitness = sum(fitness_values)
     selection_probs = [f / total_fitness for f in fitness_values]
-    return population[np.random.choice(len(population), p=selection_probs)]
+    idx = np.random.choice(len(population), size=size, p=selection_probs)
+    return population[idx[0]], population[idx[1]]
+
 
 # tournament selection
 def tournament_selection(population, fitness_values, tournament_size=2):
-    tournament_indices = np.random.choice(len(population), size=tournament_size)
+    tournament_indices = np.random.choice(len(population), size=tournament_size*2, replace=False)
     tournament_fitness = [fitness_values[i] for i in tournament_indices]
-    return population[tournament_indices[np.argmax(tournament_fitness)]]
+    idx = np.argmax(tournament_fitness[:tournament_size]), np.argmax(tournament_fitness[tournament_size:])
+    return population[tournament_indices[idx[0]]], population[tournament_indices[idx[1]]]
 
 # One-point crossover
 def one_point_crossover(parent1, parent2):
@@ -26,10 +31,10 @@ def one_point_crossover(parent1, parent2):
     return offspring1, offspring2
 
 # Genetic Algorithm function
-def genetic_algorithm(pop_size=200, bit_length=50, generations=100, runs=10, pc=1.0):
-    best_fitness_per_generation = np.zeros(generations)
-
-    for run in range(runs):
+def genetic_algorithm(pop_size=200, bit_length=50, generations=100, runs=RUNS, pc=1.0, selection='roulette'):
+    best_fitness_per_generation = np.zeros((generations+1, runs))
+    np.random.seed(42)
+    for run in trange(runs):
         # Random initialization of population
         population = [np.random.randint(2, size=bit_length).tolist() for _ in range(pop_size)]
 
@@ -38,7 +43,7 @@ def genetic_algorithm(pop_size=200, bit_length=50, generations=100, runs=10, pc=
 
         for generation in range(generations):
             # Calculate fitness for the current population
-            fitness_values = [fitness(ind) for ind in population]
+            fitness_values = list(map(fitness, population))
 
             # Record the best fitness of this generation
             best_fitness_in_run.append(max(fitness_values))
@@ -48,8 +53,11 @@ def genetic_algorithm(pop_size=200, bit_length=50, generations=100, runs=10, pc=
 
             while len(new_population) < pop_size:
                 # Parent selection via roulette wheel
-                parent1 = roulette_wheel_selection(population, fitness_values)
-                parent2 = roulette_wheel_selection(population, fitness_values)
+                # parent1, parent2 = roulette_wheel_selection(population, fitness_values)
+                if selection == 'roulette':
+                    parent1, parent2 = roulette_wheel_selection(population, fitness_values)
+                elif selection == 'tournament':
+                    parent1, parent2 = tournament_selection(population, fitness_values)
 
                 # Recombination (One-point crossover)
                 if random.random() < pc:
@@ -62,22 +70,29 @@ def genetic_algorithm(pop_size=200, bit_length=50, generations=100, runs=10, pc=
 
             # Update population with new generation
             population = new_population[:pop_size]
-
-        # Add best fitness values of the current run to the total
-        best_fitness_per_generation += np.array(best_fitness_in_run)
-
-    # Average over the 10 runs
-    best_fitness_per_generation /= runs
+        
+        best_fitness_in_run.append(max(fitness_values))
+        best_fitness_per_generation[:, run] = best_fitness_in_run
 
     return best_fitness_per_generation
 
-# Running the GA and plotting results
-best_fitness = genetic_algorithm()
-
-# Plotting the best fitness over generations
-plt.plot(best_fitness)
-plt.xlabel('Generation')
-plt.ylabel('Average Best Fitness (10 Runs)')
-plt.title('Genetic Algorithm - OneMax Problem (50-bit)')
-plt.grid(True)
-plt.show()
+for selection in ['roulette', 'tournament']:
+    best_fitness = genetic_algorithm(selection=selection)
+    best_fitness**=0.5
+    plt.figure(figsize=(10, 6))
+    for i in range(RUNS):
+        plt.plot(best_fitness[:, i], alpha=0.2, color=mcolors.TABLEAU_COLORS['tab:blue'])
+    plt.plot(np.mean(best_fitness, axis=1), color=mcolors.TABLEAU_COLORS['tab:green'], label='Average')
+    plt.axhline(y=50, color='r', linestyle='--', label='Optimal Fitness')
+    plt.xlabel('Generation')
+    plt.ylabel('Fitness')
+    plt.yticks(np.arange(min(best_fitness.flatten()), 51, 1))
+    plt.legend()
+    if selection == 'roulette':
+        plt.title(f'Genetic Algorithm - OneMax Problem (50-bit) - Roulette Selection')
+    elif selection == 'tournament':
+        plt.title(f'Genetic Algorithm - OneMax Problem (50-bit) - Tournament Selection')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f'oneMax_GA_{selection}.pdf')
+    # plt.show()

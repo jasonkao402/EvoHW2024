@@ -40,7 +40,7 @@
 \begin{document}
 \begin{CJK}{UTF8}{bkai}
     %%%%%%%%% TITLE
-    \title{Computer Vision Homework 1 Report}
+    \title{Evolutionary Computation - Homework 1}
 
     \author{
         高聖傑\\
@@ -74,39 +74,52 @@ where $n$ is the number of bits. Solving for $n$ gives:
     n \geq = \log_2(1000) \approx 9.966
 \end{equation}
 Therefore, at least 10 bits are needed to achieve a precision of 0.001 for a bit-string genetic algorithm.
-\section*{Question 3}
-OneMax problem with genetic algorithm.
-\begin{figure}
+\section*{Question 3 \& 4}
+OneMax problem with genetic algorithm, using roulette wheel selection.
+\begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{figs/3a.png}
-    \caption{The average fitness of the population over generations for the OneMax problem.}
+    \includegraphics[width=0.8\textwidth]{images/oneMax_GA_roulette.pdf}
+    \caption{Best and average of best fitness over generations, using roulette wheel selection.}
     \label{fig:3a}
 \end{figure}
-
-\section*{Question 4}
 Modified fitness function.
-\begin{figure}
+\begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{figs/4a.png}
-    \caption{The average fitness of the population over generations for the OneMax problem.}
+    \includegraphics[width=0.8\textwidth]{images/oneMax_GA_roulette_mod.pdf}
+    \caption{Best and average of best fitness over generations, using roulette wheel selection with the modified fitness function.}
     \label{fig:4a}
 \end{figure}
 
 \section*{Question 5}
-Compare Q3 and Q4. \xAns
+Compare Question 3 and 4. \xAns In \xfigs{fig:3a}{fig:4a}, we can observe that adding 1000 to fitness values when selecting parents made devastating impact on the performance of the genetic algorithm. The reason is that the chances of selecting an individual in the roulette method are proportional to the ratio of each individual's fitness to the sum of fitness. When you add a constant to each individual's fitness, which make the relative fitness difference between the individuals becomes relatively small, it becomes even more difficult to tell good individuals from bad ones. As a result, the selection process now has lower selection pressure, relies more on randomness, and the superior individuals do not get enough advantage, which in turn reduces the quality of the solution.
 
 \section*{Question 6 \& 7}
 OneMax problem with genetic algorithm, using tournament selection.
-\begin{figure}
+\begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{figs/6a.png}
-    \caption{The average fitness of the population over generations for the OneMax problem using tournament selection.}
+    \includegraphics[width=0.8\textwidth]{images/oneMax_GA_tournament.pdf}
+    \caption{Fitness of each run and the average fitness of the population over generations, using tournament selection.}
     \label{fig:6a}
 \end{figure}
-
+Modified fitness function.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/oneMax_GA_tournament_mod.pdf}
+    \caption{Fitness of each run and the average fitness of the population over generations, using tournament selection with the modified fitness function.}
+    \label{fig:7a}
+\end{figure}
 \section*{Question 8}
-Compare Q6 and Q7. \xAns
+Compare Question 6 and 7. \xAns In \xfigs{fig:6a}{fig:7a}, we can observe that adding 1000 to fitness values does not make much difference in the performance when using tournament selection. The reason is that the tournament selection method is less sensitive to the absolute fitness values of the individuals, as adding a constant to the fitness values does not change the ranking of the individuals.
 
 \section*{Question 9}
-Compare Q3, Q4, Q6, and Q7. \xAns
+Compare Question 3, 4, 6, and 7. \xAns Comparing \xfigs{fig:3a}{fig:6a}, with the original fitness function, we can observe that the tournament selection converges faster and has less deviation than the roulette wheel selection, which aligns with the greedy selection property of the tournament selection. On the other hand, the roulette wheel selection relies more on relative fitness differences, making it difficult to distinguish between individuals at the point of where all individuals are close to the optimum. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/oneMax_GA_roulette_fs.pdf}
+    \caption{Best and average of best fitness over generations, using roulette wheel selection with fitness scaling.}
+    \label{fig:9a}
+\end{figure}
+As shown in \xfig{fig:9a}, fitness scaling can be introduced to the roulette wheel selection to improve its performance, by using a nonlinear conversion, which is simply squaring the fitness values in this case, a better performance can be achieved.
+
+In \xfigs{fig:4a}{fig:7a}, with the modified fitness function, we can observe that the tournament selection is unaffected by the modification, while the roulette wheel selection is severely impacted, this implies that the roulette wheel selection need to be carefully designed to handle the fitness scaling issue.
 \end{document}
