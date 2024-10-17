@@ -60,7 +60,7 @@ The eight queens problem.
 \end{enumerate}
 % \subsection{}
 \section{Question 2}
-Given a function $f(x) : [0,1] \rightarrow R$. We want to find an optimal x
+Given a function $f(x) : [0,1] \rightarrow \mathbb{R}$. We want to find an optimal $x$
 value with a required precision of 0.001 of the solution. That is, we
 want to be sure that the distance between the found optimum and the
 real optimum is at most 0.001. How many bits are needed at least to
@@ -69,7 +69,11 @@ achieve this precision for a bit-string genetic algorithm?
 \begin{equation}
     2^{-n} \leq 0.001
 \end{equation}
-
+where $n$ is the number of bits. Solving for $n$ gives:
+\begin{equation}
+    n \geq \log_2\left(\frac{1}{0.001}\right) = \log_2(1000) \approx 9.966
+\end{equation}
+Therefore, at least 10 bits are needed to achieve a precision of 0.001 for a bit-string genetic algorithm.
 \section{Question 3}
 OneMax problem with genetic algorithm.
 \begin{figure}
