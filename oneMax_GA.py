@@ -6,7 +6,8 @@ from tqdm import trange
 RUNS = 10
 # Fitness function for the OneMax problem
 def fitness(individual):
-    return sum(individual)**2
+    # return sum(individual)**2
+    return sum(individual)
 
 # Roulette wheel selection
 def roulette_wheel_selection(population, fitness_values, size=2):
@@ -78,7 +79,7 @@ def genetic_algorithm(pop_size=200, bit_length=50, generations=100, runs=RUNS, p
 
 for selection in ['roulette', 'tournament']:
     best_fitness = genetic_algorithm(selection=selection)
-    best_fitness**=0.5
+    # best_fitness**=0.5
     plt.figure(figsize=(10, 6))
     for i in range(RUNS):
         plt.plot(best_fitness[:, i], alpha=0.2, color=mcolors.TABLEAU_COLORS['tab:blue'])
