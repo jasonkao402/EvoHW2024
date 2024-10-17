@@ -50,31 +50,31 @@
     \maketitle
 \end{CJK}
 
-\section{Question 1}
+\section*{Question 1}
 The eight queens problem.
 \begin{enumerate}[label=(\alph*)]
-    \item How big is the phenotype space for the eight queens problem? \xAns $8! = 40320$.
+    \item How big is the phenotype space for the eight queens problem? \xAns A valid solution for the problem can be considered as a phenotype. There are no known formulas to calculate the exact number of valid solutions for the eight queens problem, so the size of the phenotype space is figured out by counting the number of valid solutions via brute force, DFS, or other methods, which is $92$.
     \item Give a genotype to encode the 8x8 chessboard configuration. \xAns A genotype can be represented by an array of 8 integers, where each integer represents the row index of the queen in the corresponding column.
-    \item How big is the genotype space you give in (b)? \xAns $8^8 = 16777216$.
-    \item Briefly describe why the proposed genotype is able to cover the phenotype space. \xAns The proposed genotype is able to cover the phenotype space because each genotype corresponds to a unique phenotype. The genotype is a permutation of the integers from 1 to 8, and each integer represents the row index of the queen in the corresponding column. Since the genotype is a permutation, each genotype corresponds to a unique phenotype.
+    \item How big is the genotype space you give in (b)? \xAns Genotype space is the permutation of the integers from 1 to 8, which is $8! = 40320$.
+    \item Briefly describe why the proposed genotype is able to cover the phenotype space. \xAns Since the genotype covered all permutations of the integers from 1 to 8, the proposed genotype is able to cover the phenotype space, which is subset of the genotype space.
 \end{enumerate}
 % \subsection{}
-\section{Question 2}
+\section*{Question 2}
 Given a function $f(x) : [0,1] \rightarrow \mathbb{R}$. We want to find an optimal $x$
 value with a required precision of 0.001 of the solution. That is, we
 want to be sure that the distance between the found optimum and the
 real optimum is at most 0.001. How many bits are needed at least to
 achieve this precision for a bit-string genetic algorithm?
-\xAns The precision of the solution is 0.001, which means that the distance between the found optimum and the real optimum is at most 0.001. The number of bits needed to achieve this precision can be calculated as follows:
+\xAns The required precision means that the distance between the found optimum and the real optimum is at most 0.001. The number of bits needed to achieve this precision can be calculated as follows:
 \begin{equation}
     2^{-n} \leq 0.001
 \end{equation}
 where $n$ is the number of bits. Solving for $n$ gives:
 \begin{equation}
-    n \geq \log_2\left(\frac{1}{0.001}\right) = \log_2(1000) \approx 9.966
+    n \geq = \log_2(1000) \approx 9.966
 \end{equation}
 Therefore, at least 10 bits are needed to achieve a precision of 0.001 for a bit-string genetic algorithm.
-\section{Question 3}
+\section*{Question 3}
 OneMax problem with genetic algorithm.
 \begin{figure}
     \centering
@@ -83,7 +83,7 @@ OneMax problem with genetic algorithm.
     \label{fig:3a}
 \end{figure}
 
-\section{Question 4}
+\section*{Question 4}
 Modified fitness function.
 \begin{figure}
     \centering
@@ -92,10 +92,10 @@ Modified fitness function.
     \label{fig:4a}
 \end{figure}
 
-\section{Question 5}
+\section*{Question 5}
 Compare Q3 and Q4. \xAns
 
-\section{Question 6 and 7}
+\section*{Question 6 \& 7}
 OneMax problem with genetic algorithm, using tournament selection.
 \begin{figure}
     \centering
@@ -104,9 +104,9 @@ OneMax problem with genetic algorithm, using tournament selection.
     \label{fig:6a}
 \end{figure}
 
-\section{Question 8}
+\section*{Question 8}
 Compare Q6 and Q7. \xAns
 
-\section{Question 9}
+\section*{Question 9}
 Compare Q3, Q4, Q6, and Q7. \xAns
 \end{document}
