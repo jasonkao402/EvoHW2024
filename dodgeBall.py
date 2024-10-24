@@ -2,6 +2,7 @@ import pygame
 import random
 import numpy as np
 import pygame.freetype
+from dodgeScore import attackScore, dodgeScore, totalFitness
 # 初始化 pygame
 pygame.init()
 
@@ -74,7 +75,7 @@ def calculate_distance(source, target):
 # 遊戲主迴圈
 running = True
 clock = pygame.time.Clock()
-font = pygame.freetype.SysFont(None, 20)
+font = pygame.freetype.SysFont('Arial', 24)
 
 while running:
     for event in pygame.event.get():
