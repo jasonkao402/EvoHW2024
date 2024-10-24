@@ -2,5 +2,5 @@
 *.log
 *.out
 *.pdf
-*.synctex.gz
+*.synctex.gz*
 !images/*
