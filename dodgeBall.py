@@ -84,7 +84,7 @@ def calculate_distance(source, target):
 
 # 遊戲主迴圈
 running = True
-framecount = 0
+frameCount = 0
 clock = pygame.time.Clock()
 font = pygame.freetype.SysFont('Arial', 24)
 # Example of evolving the weights for a single player's movement
@@ -113,13 +113,13 @@ while running:
     ball_speed *= 0.98  # 模擬空氣阻力
 
     # 碰撞檢測（檢查球是否碰到藍隊成員）
-    if framecount % 10 == 9:
+    if frameCount % 10 == 9:
         
         population_fitness = []
         for i, player in enumerate(blue_team):
             fitness = dodgeScore(ball_pos, player)
             population_fitness.append(fitness)
-        print(f"Generation {framecount//10} {len(population_fitness)}")
+        print(f"Generation {frameCount//10} {len(population_fitness)}")
         print(f"Max fitness: {max(population_fitness)}")
         
         new_population = []
@@ -177,6 +177,6 @@ while running:
     
     # 控制更新速度
     clock.tick(30)
-    framecount += 1
+    frameCount += 1
 # 結束 pygame
 pygame.quit()
