@@ -7,11 +7,12 @@ def attackScore(ball_pos, blue_team):
         score += 100 / (dist+1)
     return score
 
-def dodgeScore(ball_pos, blue_team):
-    score = 0
-    for player in blue_team:
-        dist = np.linalg.norm(ball_pos - player)
-        score += dist**2
+def dodgeScore(ball_pos, player_pos):
+    score = np.linalg.norm(ball_pos - player_pos) ** 2
+    # score = 0
+    # for player in blue_team:
+        # dist = np.linalg.norm(ball_pos - player)
+        # score += dist**2
     return score
 
 def teamSpacingScore(blue_team, min_distance=10):
@@ -85,3 +86,62 @@ def totalFitness(ball_pos, ball_velocity, blue_team, previous_positions, field_s
     )
     
     return total_score
+
+def elu6(x: np.ndarray) -> np.ndarray:
+    # Apply ELU activation function and cap the output at 6
+    return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
+
+class NeuralNetwork:
+    def __init__(self, input_size, hidden_sizes, output_size):
+        # Initialize neural network layers with random weights and biases
+        self.layers = []
+        layer_sizes = [input_size] + hidden_sizes + [output_size]
+        for i in range(len(layer_sizes) - 1):
+            weights = np.random.randn(layer_sizes[i], layer_sizes[i + 1])
+            biases = np.random.randn(layer_sizes[i + 1])
+            self.layers.append((weights, biases))
+    
+    def forward(self, x):
+        # Forward pass through the neural network
+        for weights, biases in self.layers:
+            x = np.dot(x, weights) + biases
+            x = elu6(x)
+        return x
+
+    def get_weights(self):
+        # Flatten the weights and biases into a chromosome
+        return np.concatenate([weights.flatten() for weights, _ in self.layers] + 
+                              [biases.flatten() for _, biases in self.layers])
+    
+    def set_weights(self, chromosome):
+        # Set the weights and biases from a chromosome
+        idx = 0
+        for i in range(len(self.layers)):
+            weights, biases = self.layers[i]
+            weight_size = weights.size
+            self.layers[i] = (
+                chromosome[idx:idx + weight_size].reshape(weights.shape),
+                chromosome[idx + weight_size:idx + weight_size + biases.size]
+            )
+            idx += weight_size + biases.size
+            
+def tournament_selection(population, fitness_values, tournament_size=3):
+    tournament_indices = np.random.choice(len(population), size=tournament_size*2, replace=False)
+    tournament_fitness = [fitness_values[i] for i in tournament_indices]
+    idx = np.argmax(tournament_fitness[:tournament_size]), np.argmax(tournament_fitness[tournament_size:])
+    return population[tournament_indices[idx[0]]], population[tournament_indices[idx[1]]]
+
+def one_point_crossover(parent1, parent2):
+    chromosome1 = parent1.get_weights()
+    chromosome2 = parent2.get_weights()
+    point = np.random.randint(1, len(chromosome1) - 1)
+    offspring1 = NeuralNetwork(6, [10, 10], 2).set_weights(np.concatenate([chromosome1[:point], chromosome2[point:]]))
+    offspring2 = NeuralNetwork(6, [10, 10], 2).set_weights(np.concatenate([chromosome2[:point], chromosome1[point:]]))
+    return offspring1, offspring2
+
+def one_point_mutation(chromosome, mutation_rate, std_dev=0.1):
+    mutated_chromosome = chromosome.copy()
+    for i in range(len(chromosome)):
+        if np.random.rand() < mutation_rate:
+            mutated_chromosome[i] += np.random.normal(0, std_dev)
+    return mutated_chromosome
