@@ -1,0 +1,201 @@
+% CVPR 2022 Paper Template
+% !TEX root = PaperForReview.tex
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{titling}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{CJKutf8}
+\usepackage{geometry}
+\usepackage{float}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+%  \setlength{\headheight}{15.0pt}
+\addtolength{\topmargin}{-3.0pt}
+
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+% \usepackage{fancyhdr}
+% \fancypagestyle{plain}{%  the preset of fancyhdr 
+%     \fancyhf{} % clear all header and footer fields
+%     \fancyhead[L]{Computer Vision Homework 1 Report}
+%     \fancyhead[R]{\today}
+% }
+\makeatletter
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+\input{macros.tex}
+\newcommand{\xAns}{\vskip 2mm\textbf{Answer:} }
+\begin{document}
+\begin{CJK}{UTF8}{bkai}
+    %%%%%%%%% TITLE
+    \title{Information Retrieval Homework 1 Report}
+    
+    \author{
+        Leader\\
+        高聖傑\\
+        313552011\\
+        rabbitkao402@gmail.com
+    }
+
+    \maketitle
+\end{CJK}
+
+\section{Pre-processing}
+\subsection{Applied Pre-processing Methods}
+In the pre-processing step of corpus data and queries, "nltk", "beautifulsoup", and "re" from Python were used to implement the following methods:
+\begin{itemize}
+    \item \textbf{Case Folding}: All text was converted to lowercase to ensure that variations in capitalization don't affect term matching.
+    \item \textbf{Stop Words Removal}: Common English stop words (e.g., "the", "is", "and") were removed to reduce noise and focus on significant terms.
+    \item \textbf{Tokenization}: Sentences were split into individual words or tokens for indexing.
+    \item \textbf{Contraction Expansion}: Common contractions (e.g., "you're" to "you are") were expanded for consistency.
+    \item \textbf{Lemmatization}: Words were reduced to their base forms (e.g., "running" to "run") to normalize words with similar meanings.
+    \item \textbf{HTML/Wiki Noise Removal}: HTML tags, website links, common strings on Wikipedia pages, punctuation, and non-alphanumeric characters were removed.
+\end{itemize}
+All of these methods were applied to both the corpus data and queries to ensure consistency and chance of recall.
+
+\subsection{Effect of Different Preprocessing Methods}
+\begin{itemize}
+    \item \textbf{Case Folding \& Stop Words Removal}: Improved the models' efficiency by reducing the size of the vocabulary, allowing faster processing and more accurate term matching.
+    \item \textbf{Tokenization}: Better tokenization implemented from the "nltk" library helped in breaking down text into meaningful units, improving the quality of the indexed data.
+    \item \textbf{Lemmatization}: Enhanced recall as different forms of the same word were consolidated, making documents and queries more likely to match.
+    \item \textbf{Contraction Expansion}: Helped in handling conversational or informal queries, leading to more accurate matching with formal document data.
+    \item \textbf{HTML/Wiki Noise Removal}: Reduced noise and irrelevant information, improving the quality of the indexed data and search results.
+\end{itemize}
+
+\subsection{Personal Experimentation with Preprocessing}
+We started with a baseline model, mostly on the BM25 model, without any preprocessing and gradually added each method to observe the impact on the model's performance. Without preprocessing, we get a averaged Recall@3 of around 80\%, on the training dataset of 200 queries.
+From later experiments, case folding, lemmatization, and noise removal are considered the most effective preprocessing methods for our dataset, leading to 89\% with case folding and noise removal, and 91\% with added lemmatization. Using tokenization from the "nltk" library instead of a simple string split also showed a slight improvement in performance, achieving 91.5\% Recall@3.
+However, stop words removal and contraction expansion did not show significant improvements in our experiments.
+
+\section{Implementation of the Vector Model and BM25}
+\subsection{Vector Model}
+\begin{itemize}
+    \item \textbf{Vocabulary Creation}: Built a vocabulary by collecting unique terms across the corpus.
+    \item \textbf{TF Calculation}: Counted term frequencies (TF) for each document.
+    \item \textbf{IDF Calculation}: Calculate inverse document frequency (IDF) using the formula:
+    \begin{equation}
+        IDF(q_i) = \log\left(\frac{N + 1}{df(q_i) + 1}\right) + 1
+        \label{eq:idf_vsm}
+    \end{equation}
+    where \(N\) is the total number of documents and \(df(q_i)\) is the number of documents containing term \(q_i\).
+    \item \textbf{TF-IDF Vector Construction}: Constructed document vectors by multiplying TF and IDF for each term, normalizing the document vectors to account for varying document lengths.
+    \item \textbf{Query Representation}: Queries were processed similarly to the corpus and converted into TF-IDF vectors.
+    \item \textbf{Cosine Similarity}: Calculated the similarity between the query vector and each document vector using cosine similarity, ranking documents by similarity.
+\end{itemize}
+\subsection{BM25}
+\begin{itemize}
+    \item \textbf{Document Length Calculation}: Calculated the average document length (avgdl).
+    \item \textbf{IDF Calculation}: Used a slightly different formula for IDF to handle rare terms more gracefully:
+    \begin{equation}
+        IDF(q_i) = \log\left(\frac{N - df(q_i) + 0.5}{df(q_i) + 0.5} + 1\right)
+        \label{eq:idf_bm25}
+    \end{equation}
+    \item \textbf{BM25 Score Calculation}: For each query term, computed the BM25 score for each document using:
+    \begin{equation}
+        \text{Score} = \sum_{q_i \in q} IDF(q_i) \cdot \frac{f(q_i, d) \cdot (k_1 + 1)}{f(q_i, d) + k_1 \cdot \left(1 - b + b \cdot \frac{|d|}{\text{avgdl}}\right)}
+        \label{eq:bm25_score}
+    \end{equation}
+    where \( f(q_i, d) \) is the frequency of term \(q_i\) in document \(d\), \( |d| \) is the document length, \( k_1 \) and \( b \) are tuning parameters.
+    \item \textbf{Ranking}: Ranked documents based on the computed BM25 scores for each query.
+\end{itemize}
+
+\section{Comparison: Strengths and Weaknesses of VM and BM25}
+\subsection{Vector Model (VM)}
+\subsubsection{Strengths}
+\begin{itemize}
+    \item \textbf{Simplicity}: Easy to understand and implement. The calculation is straightforward with TF-IDF weighting.
+    \item \textbf{Computationally Efficient}: Quick to calculate once the model is constructed, rest of the operations are basic linear algebra operations. 
+    \item \textbf{Flexibility}: Can be easily extended with additional features, such as weighting schemes.
+\end{itemize}
+\subsubsection{Weaknesses}
+\begin{itemize}
+    \item \textbf{Curse of Dimensionality}: High-dimensional vectors can lead to a sparse matrix, making it computationally expensive.
+    \item \textbf{No Saturation Effect}: Frequent terms are disproportionately weighted, which might lead to poor performance when specific terms dominate a document.
+    % \item \textbf{Fail on Short Queries}: Vector model may not perform well on short queries due to the lack of context.
+\end{itemize}
+
+\subsection{BM25}
+\subsubsection{Strengths}
+\begin{itemize}
+    \item \textbf{Handling Term Saturation}: Limits the effect of term frequency through the \( k_1 \) parameter, ensuring that over-represented terms don’t excessively dominate.
+    \item \textbf{Normalization by Document Length}: The \( b \) parameter helps adjust for varying document lengths, leading to more accurate scoring for long and short documents.
+    \item \textbf{Keyword-Based Queries}: BM25 is effective in handling keyword-based queries, where the presence of specific terms can substantially affect relevance.
+\end{itemize}
+\subsubsection{Weaknesses}
+\begin{itemize}
+    % \item \textbf{Parameters Tuning}: More complex than VSM and requires tuning of parameters (\(k_1\) and \(b\)) for optimal performance.
+    \item \textbf{Over-penalize of Long Documents}: BM25 might over-penalize long documents due to the document length normalization factor. 
+    \item \textbf{More Computation}: IDF and scoring involve more complex calculations, making it slower for large datasets if not optimized.
+\end{itemize}
+\subsubsection{Extra Note on Parameters of BM25}
+Having parameters like \(k_1\) and \(b\) in BM25 allows for fine-tuning the model to better fit the characteristics of the corpus. However, this is a double-edged sword as it requires domain knowledge and experimentation to find the optimal values.
+
+\section{Conclusion}
+In this assignment, we implemented the Vector Space Model (VSM) and BM25 for information retrieval tasks. From the experiment results, we observed that, on my implementation and preprocessing methods, here BM25 generally outperforms VSM in terms Recall@3, particularly in complex scenarios with longer documents or diverse vocabularies, though VSM might still be favored for its simplicity in lightweight or real-time search tasks.
+\end{document}
+
+% ### 2. **Implementation of the Vector Model and BM25**
+%    #### Vector Space Model (VSM):
+%    - **Vocabulary Creation**: Built a vocabulary by collecting unique terms across the corpus.
+%    - **TF Calculation**: Counted term frequencies (TF) for each document.
+%    - **IDF Calculation**: Calculated Inverse Document Frequency (IDF) using the formula:
+     
+%      where \(N\) is the total number of documents and \(df(t)\) is the number of documents containing term \(t\).
+%    - **TF-IDF Vector Construction**: Constructed document vectors by multiplying TF and IDF for each term, normalizing the document vectors to account for varying document lengths.
+%    - **Query Representation**: Queries were processed similarly to the corpus and converted into TF-IDF vectors.
+%    - **Cosine Similarity**: Calculated the similarity between the query vector and each document vector using cosine similarity, ranking documents by similarity.
+
+%    #### BM25 Implementation:
+%    - **Document Length Calculation**: Calculated the average document length (\(\text{avgdl}\)).
+%    - **IDF Calculation**: Used a slightly different formula for IDF to handle rare terms more gracefully:
+%      \[
+%      IDF(t) = \log\left(\frac{N - df(t) + 0.5}{df(t) + 0.5} + 1\right)
+%      \]
+%    - **BM25 Score Calculation**: For each query term, computed the BM25 score for each document using:
+%      \[
+%      \text{Score} = \sum_{t \in q} IDF(t) \cdot \frac{f(t, d) \cdot (k_1 + 1)}{f(t, d) + k_1 \cdot \left(1 - b + b \cdot \frac{|d|}{\text{avgdl}}\right)}
+%      \]
+%      where \( f(t, d) \) is the frequency of term \(t\) in document \(d\), \( |d| \) is the document length, \( k_1 \) and \( b \) are tuning parameters.
+%    - **Ranking**: Ranked documents based on the computed BM25 scores for each query.
+
+% ### 3. **Comparison: Strengths and Weaknesses of VSM and BM25**
+%    #### **Vector Space Model (VSM)**
+%    **Strengths**:
+%    - **Simplicity**: Easy to understand and implement. The calculation is straightforward with TF-IDF weighting.
+%    - **Computationally Efficient**: Quick to calculate once the vocabulary and vectors are constructed.
+%    - **Good with Short Queries**: Works well with simple, short keyword-based queries.
+
+%    **Weaknesses**:
+%    - **Lacks Fine-tuning**: Treats all terms uniformly without distinguishing between more important and less important terms beyond simple TF-IDF.
+%    - **Length Bias**: Doesn't handle varying document lengths well, leading to potential biases toward longer documents.
+%    - **No Saturation Effect**: Frequent terms are disproportionately weighted, which might lead to poor performance when specific terms dominate a document.
+
+%    #### **BM25**
+%    **Strengths**:
+%    - **Handling Term Saturation**: Limits the effect of term frequency through the \( k_1 \) parameter, ensuring that over-represented terms don’t excessively dominate.
+%    - **Normalization by Document Length**: The \( b \) parameter helps adjust for varying document lengths, leading to more accurate scoring for long and short documents.
+%    - **Better Recall**: Captures relevant documents even if they have a mix of query terms, thanks to fine-tuned scoring based on IDF.
+
+%    **Weaknesses**:
+%    - **Complexity**: More complex than VSM and requires tuning of parameters (\(k_1\) and \(b\)) for optimal performance.
+%    - **More Computation**: IDF and scoring involve more complex calculations, making it slower for large datasets if not optimized.
+
+%    #### **Factors Affecting Performance**
+%    - **Term Weighting**: BM25 provides more nuanced weighting for term frequency than VSM, which helps in scenarios with documents of varying lengths.
+%    - **Document Length Normalization**: BM25’s normalization is superior for documents of differing lengths, where VSM might overemphasize longer documents.
+%    - **Query Length**: VSM can struggle with longer, complex queries where BM25’s handling of term saturation helps in finding more relevant results.
+%    - **Parameter Tuning**: BM25's performance heavily relies on the choice of \(k_1\) and \(b\), which can be adjusted to match the characteristics of the corpus.
+
+% In conclusion, **BM25 generally outperforms VSM in terms of precision and recall**, particularly in complex scenarios with longer documents or diverse vocabularies, though VSM might still be favored for its simplicity in lightweight or real-time search tasks.
