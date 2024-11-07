@@ -1,0 +1,115 @@
+% CVPR 2022 Paper Template
+% !TEX root = PaperForReview.tex
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{titling}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{CJKutf8}
+\usepackage{geometry}
+\usepackage{float}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+%  \setlength{\headheight}{15.0pt}
+\addtolength{\topmargin}{-3.0pt}
+
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+% \usepackage{fancyhdr}
+% \fancypagestyle{plain}{%  the preset of fancyhdr 
+%     \fancyhf{} % clear all header and footer fields
+%     \fancyhead[L]{Computer Vision Homework 1 Report}
+%     \fancyhead[R]{\today}
+% }
+\makeatletter
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+\input{macros.tex}
+\newcommand{\xAns}{\vskip 2mm\textbf{Answer:} }
+\begin{document}
+\begin{CJK}{UTF8}{bkai}
+    %%%%%%%%% TITLE
+    \title{Evolutionary Computation - Homework 2}
+
+    \author{
+        高聖傑\\
+        313552011\\
+    }
+
+    \maketitle
+\end{CJK}
+
+\section*{Question 1}
+
+\subsubsection*{Population Size}
+\begin{itemize}
+    \item ES have a wide range of population sizes, in $(1+1)$-ES, the population size is 2, while in $(\mu, \lambda)$-ES, the population size is $\mu$. The population size of ES can be adjusted to fit the computational resources available.
+    \item Steady-state GA generally maintains a rather small population size, which is less computationally expensive compared to standard GA.
+\end{itemize}
+
+\subsubsection*{Offspring}
+\begin{itemize}
+    \item ES generates a large number of offspring in each generation, in a common setting of $(\mu, \lambda)$-ES, the number of offspring $\lambda$ is approximately $7\mu$, which fills the population with mutated offspring. 
+    \item Steady-State GA only produces 2 offspring in each generation, and the offsprings don't replace the parents immediately. This leads to its characteristic of having small generation gaps.
+\end{itemize}
+
+\section*{Question 2}
+\subsubsection*{One-point crossover}
+\begin{itemize}
+    \item One-point crossover selects a random point on the chromosome and swaps the segments of the two parents. Since the allele frequency of any segment of a chromosome remains the same as the original chromosome, the allele frequency of the chromosome after crossover should be the same as the original chromosome, ignoring the deviation caused by randomness. The allele frequency of 1 at position $i$ should remain close to 0.25 after $k$ crossover operations.
+\end{itemize}
+\subsubsection*{Uniform crossover}
+\begin{itemize}
+    \item Uniform crossover creates a mask of 0s and 1s to determine if a swap should be performed at each position. This may change the allele frequency of the chromosome due to the randomness of the mask. However, the expected allele frequency of 1 at position $i$ should remain close to 0.25 after $k$ crossover operations as the mask is randomly generated with no intention to change the allele frequency of 0s and 1s.
+\end{itemize}
+
+\section*{Question 3}
+In order to minimize the n-dimensional sphere model
+\begin{equation}
+    f(\mathbf{x}) = \sum_{i=1}^{n} x_i^2, \quad \mathbf{x} \in \mathbb{R}^n, \quad i = 1, 2, \ldots, n,
+\end{equation}
+where $n = 10$, implement the following evolution strategies:
+(a) (1, 1)-ES with fixed step-sizes for Gaussian mutation;
+(b) (1 + 1)-ES with fixed step-sizes for Gaussian mutation.
+
+The starting point for all experiments is (1, 1, . . . , 1). The termination
+criteria are either (1) the objective value of the individual is equal to
+or less than 0.005, or (2) the number of generation/iteration is equal
+to or greater than 10 million (10,000,000). Do ten independent runs
+of each experiment and record the time (in terms of the number of
+generations/iterations) when the search stops. Organize two tables for
+(1, 1)-ES and (1 + 1)-ES, respectively.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l|l|l|l}
+         $(1 + 1)$-ES      & $\sigma = 0.01$ & $\sigma = 0.1$ & $\sigma = 1.0$ \\ \hline
+        Run \#1 &    808      & 272692 &  10000000       \\ \hline
+        Run \#2 &    932      & 364293 &  10000000       \\ \hline
+        Run \#3 &    792      & 13414  &  10000000       \\ \hline
+        Run \#4 &    834      & 262764 &  10000000       \\ \hline
+        Run \#5 &    830      & 227484 &  10000000       \\ \hline
+        Run \#6 &    798      & 48009  &  10000000       \\ \hline
+        Run \#7 &    820      & 129979 &  10000000       \\ \hline
+        Run \#8 &    897      & 89652  &  10000000       \\ \hline
+        Run \#9 &    831      & 67171  &  10000000       \\ \hline
+        Run \#10 &    870     & 219018 &  10000000       \\ 
+    \caption{Results of (1, 1)-ES}
+\end{table}
+\section*{Question 4}
+\section*{Question 5}
+\section*{Question 6}
+\section*{Question 7}
+\section*{Question 8}
+\end{document}

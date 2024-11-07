@@ -14,7 +14,7 @@ F = 0.9         # Mutation factor
 CR = 0.5        # Crossover probability
 # generations = 200
 relax_interval = 10
-relax_fraction = 0.2  # Relax 20% of the population
+relax_fraction = 0.333
 
 # Agent setup
 agent_radius = 10
@@ -81,7 +81,7 @@ while running:
     # print(np.mean(fitness), np.std(fitness))
     best_index = np.argmin(fitness)
     best_velocity = population[best_index]
-    best_velocity = best_velocity / np.linalg.norm(best_velocity) * 10 if np.linalg.norm(best_velocity) > 10 else best_velocity
+    best_velocity = best_velocity / np.linalg.norm(best_velocity) * 5 if np.linalg.norm(best_velocity) > 5 else best_velocity
     print(f"Generation {generation:3d}, Best Fitness: {fitness[best_index]:.3f}, Best Velocity: {best_velocity}")
     agent_position += best_velocity
     generation += 1
