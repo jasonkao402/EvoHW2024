@@ -60,7 +60,7 @@
 
 \subsubsection*{Offspring}
 \begin{itemize}
-    \item ES generates a large number of offspring in each generation, in a common setting of $(\mu, \lambda)$-ES, the number of offspring $\lambda$ is approximately $7\mu$, which fills the population with mutated offspring. 
+    \item In common setting of $(\mu, \lambda)$-ES, it generates a large number of offspring in each generation, the number of offspring $\lambda$ is approximately $7\mu$, which fills the population with mutated offspring.
     \item Steady-State GA only produces 2 offspring in each generation, and the offsprings don't replace the parents immediately. This leads to its characteristic of having small generation gaps.
 \end{itemize}
 
@@ -75,41 +75,159 @@
 \end{itemize}
 
 \section*{Question 3}
-In order to minimize the n-dimensional sphere model
-\begin{equation}
-    f(\mathbf{x}) = \sum_{i=1}^{n} x_i^2, \quad \mathbf{x} \in \mathbb{R}^n, \quad i = 1, 2, \ldots, n,
-\end{equation}
-where $n = 10$, implement the following evolution strategies:
-(a) (1, 1)-ES with fixed step-sizes for Gaussian mutation;
-(b) (1 + 1)-ES with fixed step-sizes for Gaussian mutation.
+% In order to minimize the n-dimensional sphere model
+% \begin{equation}
+%     f(\mathbf{x}) = \sum_{i=1}^{n} x_i^2, \quad \mathbf{x} \in \mathbb{R}^n, \quad i = 1, 2, \ldots, n,
+% \end{equation}
+% where $n = 10$, implement the following evolution strategies:
+% (a) (1, 1)-ES with fixed step-sizes for Gaussian mutation;
+% (b) (1 + 1)-ES with fixed step-sizes for Gaussian mutation.
 
-The starting point for all experiments is (1, 1, . . . , 1). The termination
-criteria are either (1) the objective value of the individual is equal to
-or less than 0.005, or (2) the number of generation/iteration is equal
-to or greater than 10 million (10,000,000). Do ten independent runs
-of each experiment and record the time (in terms of the number of
-generations/iterations) when the search stops. Organize two tables for
-(1, 1)-ES and (1 + 1)-ES, respectively.
+% The starting point for all experiments is (1, 1, . . . , 1). The termination
+% criteria are either (1) the objective value of the individual is equal to
+% or less than 0.005, or (2) the number of generation/iteration is equal
+% to or greater than 10 million (10,000,000). Do ten independent runs
+% of each experiment and record the time (in terms of the number of
+% generations/iterations) when the search stops. Organize two tables for
+% (1, 1)-ES and (1 + 1)-ES, respectively.
 
 \begin{table}[H]
-    \centering
-    \begin{tabular}{l|l|l|l}
-         $(1 + 1)$-ES      & $\sigma = 0.01$ & $\sigma = 0.1$ & $\sigma = 1.0$ \\ \hline
-        Run \#1 &    808      & 272692 &  10000000       \\ \hline
-        Run \#2 &    932      & 364293 &  10000000       \\ \hline
-        Run \#3 &    792      & 13414  &  10000000       \\ \hline
-        Run \#4 &    834      & 262764 &  10000000       \\ \hline
-        Run \#5 &    830      & 227484 &  10000000       \\ \hline
-        Run \#6 &    798      & 48009  &  10000000       \\ \hline
-        Run \#7 &    820      & 129979 &  10000000       \\ \hline
-        Run \#8 &    897      & 89652  &  10000000       \\ \hline
-        Run \#9 &    831      & 67171  &  10000000       \\ \hline
-        Run \#10 &    870     & 219018 &  10000000       \\ 
-    \caption{Results of (1, 1)-ES}
+    \parbox{.5\linewidth}{
+        \centering
+        \begin{tabular}{l|r|r|r}
+            $(1, 1)$-ES & $\sigma = 0.01$ & $\sigma = 0.1$ & $\sigma = 1.0$ \\ \hline
+            Run \#1      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#2      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#3      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#4      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#5      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#6      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#7      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#8      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#9      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#10     & 10000000       & 10000000       & 10000000       \\
+        \end{tabular}
+        \caption{Results of $(1, 1)$-ES}
+        \label{tab:3a}
+    }
+    \hfill
+    \parbox{.5\linewidth}{
+        \centering
+        \begin{tabular}{l|r|r|r}
+            $(1 + 1)$-ES & $\sigma = 0.01$ & $\sigma = 0.1$ & $\sigma = 1.0$ \\ \hline
+            Run \#1      & 808             & 272692         & 10000000       \\ \hline
+            Run \#2      & 932             & 364293         & 10000000       \\ \hline
+            Run \#3      & 792             & 13414          & 10000000       \\ \hline
+            Run \#4      & 834             & 262764         & 10000000       \\ \hline
+            Run \#5      & 830             & 227484         & 10000000       \\ \hline
+            Run \#6      & 798             & 48009          & 10000000       \\ \hline
+            Run \#7      & 820             & 129979         & 10000000       \\ \hline
+            Run \#8      & 897             & 89652          & 10000000       \\ \hline
+            Run \#9      & 831             & 67171          & 10000000       \\ \hline
+            Run \#10     & 870             & 219018         & 10000000       \\
+        \end{tabular}
+        \caption{Results of (1, 1)-ES}
+        \label{tab:3b}
+    }
 \end{table}
+
 \section*{Question 4}
+From \xtab{tab:3a}, we can observe that the $(1, 1)$-ES in this experiment is not able to find the optimal solution within the given number of generations due to this approach replaces the parent with the offspring in each iteration, regardless of its quality relative to the original parent, essentially being a random walk. 
+
+On the other hand, in \xtab{tab:3b}, the $(1+1)$-ES is able to find the optimal solution within a reasonable number of generations on $\sigma = 0.01$ and $\sigma = 0.1$, 0.01 seem to be a sweet spot here, setting it too low will cause the search converge too slowly. However, the $(1+1)$-ES with $\sigma = 1.0$ is not able to find the optimal solution within the given number of generations. This is because the step size is too large, causing the search to diverge.
+
 \section*{Question 5}
+The following experiment is conducted with $\tau = 1/\sqrt{2n}$,~$\tau' = 1/\sqrt{2\sqrt{n}}$~~and~~$\epsilon_0 = 10^{-6}$, the results are shown in \xtab{tab:5a} and \xtab{tab:5b}.
+\begin{table}[H]
+    \parbox{.5\linewidth}{
+        \centering
+        \begin{tabular}{l|r|r|r}
+            $(1, 1)$-ES & $\sigma = 0.01$ & $\sigma = 0.1$ & $\sigma = 1.0$ \\ \hline
+            Run \#1      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#2      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#3      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#4      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#5      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#6      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#7      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#8      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#9      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#10     & 10000000       & 10000000       & 10000000       \\
+        \end{tabular}
+        \caption{Results of $(1, 1)$-ES}
+        \label{tab:5a}
+    }
+    \hfill
+    \parbox{.5\linewidth}{
+        \centering
+        \begin{tabular}{l|r|r|r}
+            $(1 + 1)$-ES & $\sigma = 0.01$ & $\sigma = 0.1$ & $\sigma = 1.0$ \\ \hline
+            Run \#1  & 2440     & 346     & 6748    \\ \hline
+            Run \#2  & 1627     & 5458    & 9035    \\ \hline
+            Run \#3  & 1099     & 1595    & 7477    \\ \hline
+            Run \#4  & 1575     & 2200    & 4384    \\ \hline
+            Run \#5  & 922      & 1542    & 8363    \\ \hline
+            Run \#6  & 896      & 1746    & 7400    \\ \hline
+            Run \#7  & 1126     & 3411    & 5884    \\ \hline
+            Run \#8  & 2809     & 4954    & 8677    \\ \hline
+            Run \#9  & 1609     & 2560    & 3547    \\ \hline
+            Run \#10 & 2709     & 1858    & 7557    \\
+        \end{tabular}
+        \caption{Results of (1, 1)-ES}
+        \label{tab:5b}
+    }
+\end{table}
 \section*{Question 6}
+After implementing self-adaptive uncorrelated Gaussian mutation with $n$-step sizes,  some exponential growth in $\sigma$ is observed. This could be due to the fact that the step sizes are allowed to mutate randomly and exponentially.
+To fix this, a upper bound of $\omega = 10*\sigma$ is added to keep the step size from growing too large.
+
+
+In \xtab{tab:5b}, we can observe that the $(1+1)$-ES is able to find the optimal solution within a reasonable number of generations on all sigma values. While the iteration count on $\sigma = 0.01$ is higher than the previous experiment, iterations of other sigma values are significantly reduced. The $(1, 1)$-ES is still not able to find the optimal solution within the given number of generations due to the same reason as in Question 4.
 \section*{Question 7}
+The following experiment is conducted with $G = 100$ and $a = 1.5$, the results are shown in \xtab{tab:7a} and \xtab{tab:7b}.
+\begin{table}[H]
+    \parbox{.5\linewidth}{
+        \centering
+        \begin{tabular}{l|r|r|r}
+            $(1, 1)$-ES & $\sigma = 0.01$ & $\sigma = 0.1$ & $\sigma = 1.0$ \\ \hline
+            Run \#1      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#2      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#3      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#4      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#5      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#6      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#7      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#8      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#9      & 10000000       & 10000000       & 10000000       \\ \hline
+            Run \#10     & 10000000       & 10000000       & 10000000       \\
+        \end{tabular}
+        \caption{Results of $(1, 1)$-ES}
+        \label{tab:7a}
+    }
+    \hfill
+    \parbox{.5\linewidth}{
+        \centering
+        \begin{tabular}{l|r|r|r}
+            $(1 + 1)$-ES & $\sigma = 0.01$ & $\sigma = 0.1$ & $\sigma = 1.0$ \\ \hline
+            Run \#1  & 547      & 547     & 934     \\ \hline
+            Run \#2  & 500      & 480     & 884     \\ \hline
+            Run \#3  & 589      & 570     & 903     \\ \hline
+            Run \#4  & 552      & 504     & 979     \\ \hline
+            Run \#5  & 518      & 581     & 936     \\ \hline
+            Run \#6  & 589      & 648     & 987     \\ \hline
+            Run \#7  & 523      & 418     & 979     \\ \hline
+            Run \#8  & 649      & 557     & 900     \\ \hline
+            Run \#9  & 556      & 508     & 901     \\ \hline
+            Run \#10 & 613      & 603     & 913     \\
+        \end{tabular}
+        \caption{Results of (1, 1)-ES}
+        \label{tab:7b}
+    }
+\end{table}
+
 \section*{Question 8}
+After implementing the self-adaptive mutation using the 1/5-rule, the $(1+1)$-ES is able to find the optimal solution even more efficiently than the previous experiments in problem 3 and 5. The $(1, 1)$-ES is still not able to find the optimal solution within the given number of generations due to the same reason as in Question 4. 
+
+The 1/5-rule is a heuristic that adjusts the step size based on the success rate, rather than randomly mutating the step size. This allows the search to balance exploration and exploitation more effectively. However, since G is a fixed value, the 1/5-rule may not respond quickly to sudden changes in the environment. This can be problematic in dynamic environments where the optimal solution changes over time.
+
 \end{document}

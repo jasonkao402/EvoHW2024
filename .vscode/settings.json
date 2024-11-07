@@ -13,6 +13,7 @@
         "linestyle",
         "mcolors",
         "probs",
+        "randn",
         "tqdm",
         "trange",
         "xlabel",
