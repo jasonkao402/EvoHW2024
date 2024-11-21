@@ -20,4 +20,7 @@ In the real world, you may have a problem where you have to say, some finite num
 Yeah, the abstraction that mathematics has afforded a lot of creative freedom.
 Regarding the creative freedom mentioned in Terence Tao's talk, what do you think of evolutionary computation inspired by natural evolution? Describe the creative freedom you can have in evolutionary algorithms, especially those that cannot be achieved in the real-world natural evolutionary process.
 
-A: 
+A: I think the most significant difference between natural evolution and evolutionary computation is the ability to simulate a large number of generations in a short amount of time, but this comes with a drawback that the simulation is not perfect and oversimplified. In evolutionary computation, we often have the freedom to limit the search space, change the mutation rate, and even change the fitness function to our liking. This allows us to explore the search space more efficiently and find solutions that are not possible in the real world. For example, we can change the mutation rate to a very high value to explore the search space more aggressively, or we can change the fitness function to favor certain solutions. In the real world, the mutation rate cannot exceed a certain threshold before the genetic material becomes unstable, and the fitness function is determined by the environment, which is not under our control.  
+
+Q: What was your choice of genotype for encoding the chessboard configuration?
+A:
