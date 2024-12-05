@@ -2,7 +2,7 @@ import pygame
 import random
 import numpy as np
 import pygame.freetype
-from dodgeUtil import attackScore, dodgeScore, NeuralNetwork, tournament_selection, one_point_crossover, one_point_mutation
+from dodgeUtil import attackScore, totalFitness, PlayerNeuralNetwork, tournament_selection, one_point_crossover, one_point_mutation
 # 初始化 pygame
 pygame.init()
 
@@ -94,7 +94,7 @@ hidden_sizes = [10, 10]  # Hidden layers
 output_size = 2  # Movement output (dx, dy)
 pc, pm = 0.8, 0.01  # Crossover and mutation probabilities
 # Initialize population
-population = [NeuralNetwork(input_size, hidden_sizes, output_size) for _ in range(NUM_PLAYERS)]
+population = [PlayerNeuralNetwork(input_size, hidden_sizes, output_size) for _ in range(NUM_PLAYERS)]
 # def nearest
 while running:
     for event in pygame.event.get():
@@ -110,14 +110,13 @@ while running:
 
     # 更新球位置
     ball_pos += ball_speed
-    ball_speed *= 0.98  # 模擬空氣阻力
+    ball_speed *= 0.99  # 模擬空氣阻力
 
-    # 碰撞檢測（檢查球是否碰到藍隊成員）
-    if frameCount % 10 == 9:
+    if frameCount % 4 == 1:
         
         population_fitness = []
         for i, player in enumerate(blue_team):
-            fitness = dodgeScore(ball_pos, player)
+            fitness = totalFitness(ball_pos, ball_speed, blue_team, player, FIELD_SIZE)
             population_fitness.append(fitness)
         print(f"Generation {frameCount//10} {len(population_fitness)}")
         print(f"Max fitness: {max(population_fitness)}")
@@ -130,31 +129,34 @@ while running:
                 offspring1, offspring2 = one_point_crossover(parent1, parent2)
             else:
                 offspring1, offspring2 = parent1, parent2
-            if random.random() < pm:
-                offspring1 = one_point_mutation(offspring1, pm)
-                offspring2 = one_point_mutation(offspring2, pm)
+            # if random.random() < pm:
+            #     offspring1 = one_point_mutation(offspring1, pm)
+            #     offspring2 = one_point_mutation(offspring2, pm)
             new_population.extend([offspring1, offspring2])
             
         population = new_population[:NUM_PLAYERS]
-            
+    # print(len(population))
     for i, player in enumerate(blue_team):
+        # print(population[i])
         # 2d out of bounds
         # player[player < 0] = 0
         # player[player > FIELD_SIZE] = FIELD_SIZE
-        player += population[i].forward(np.array([player[0], player[1], ball_pos[0], ball_pos[1], ball_speed[0], ball_speed[1]]))
         
+        player += population[i].forward(np.array([player[0]/FIELD_SIZE, player[1]/FIELD_SIZE, ball_pos[0]/FIELD_SIZE, ball_pos[1]/FIELD_SIZE, ball_speed[0], ball_speed[1]]))
+        player[0] = np.clip(player[0], PLAYER_RADIUS, FIELD_SIZE-PLAYER_RADIUS)
+        player[1] = np.clip(player[1], PLAYER_RADIUS, FIELD_SIZE-PLAYER_RADIUS)
         if np.linalg.norm(ball_pos - player) < PLAYER_RADIUS + BALL_RADIUS:
             # 球回到紅隊成員位置
             ball_pos = np.array(random.choice(red_team))
             ball_speed = np.zeros(2)  # 球速歸零
-            break
+            # break
     
     # 清空畫面
     WINDOW.fill(WHITE)
     
     # show score text in-game
     score_a = attackScore(ball_pos, blue_team)
-    score_d = dodgeScore(ball_pos, blue_team[0])
+    score_d = totalFitness(ball_pos, ball_speed, blue_team, blue_team[0], FIELD_SIZE)
     
     textSur, rect = font.render(f"ATK Score : {score_a:.2f}  DODGE Score : {score_d:.2f}", BLUE, WHITE)
     WINDOW.blit(textSur, OFFSET_POS)

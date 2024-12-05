@@ -8,7 +8,7 @@ def attackScore(ball_pos, blue_team):
     return score
 
 def dodgeScore(ball_pos, player_pos):
-    score = np.linalg.norm(ball_pos - player_pos) ** 2
+    score = np.linalg.norm(ball_pos - player_pos)
     # score = 0
     # for player in blue_team:
         # dist = np.linalg.norm(ball_pos - player)
@@ -78,11 +78,11 @@ def totalFitness(ball_pos, ball_velocity, blue_team, previous_positions, field_s
     
     # Adjust the weights based on importance
     total_score = (
-        1.0 * dodge_score + 
+        3.0 * dodge_score + 
         0.5 * spacing_score + 
         0.3 * boundary_score + 
-        0.2 * efficiency_score + 
-        1.5 * threat_penalty
+        0.2 * efficiency_score +
+        1.0 * threat_penalty
     )
     
     return total_score
@@ -91,11 +91,11 @@ def elu6(x: np.ndarray) -> np.ndarray:
     # Apply ELU activation function and cap the output at 6
     return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
 
-class NeuralNetwork:
+class PlayerNeuralNetwork:
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
-        layer_sizes = [input_size] + hidden_sizes + [output_size]
+        layer_sizes = [input_size, *hidden_sizes, output_size]
         for i in range(len(layer_sizes) - 1):
             weights = np.random.randn(layer_sizes[i], layer_sizes[i + 1])
             biases = np.random.randn(layer_sizes[i + 1])
@@ -135,8 +135,10 @@ def one_point_crossover(parent1, parent2):
     chromosome1 = parent1.get_weights()
     chromosome2 = parent2.get_weights()
     point = np.random.randint(1, len(chromosome1) - 1)
-    offspring1 = NeuralNetwork(6, [10, 10], 2).set_weights(np.concatenate([chromosome1[:point], chromosome2[point:]]))
-    offspring2 = NeuralNetwork(6, [10, 10], 2).set_weights(np.concatenate([chromosome2[:point], chromosome1[point:]]))
+    offspring1 = PlayerNeuralNetwork(6, [10, 10], 2)
+    offspring2 = PlayerNeuralNetwork(6, [10, 10], 2)
+    offspring1.set_weights(np.concatenate([chromosome1[:point], chromosome2[point:]]))
+    offspring2.set_weights(np.concatenate([chromosome2[:point], chromosome1[point:]]))
     return offspring1, offspring2
 
 def one_point_mutation(chromosome, mutation_rate, std_dev=0.1):
