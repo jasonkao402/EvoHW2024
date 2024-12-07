@@ -1,18 +1,7 @@
 import numpy as np
 
-def attackScore(ball_pos, blue_team):
-    score = 0
-    for player in blue_team:
-        dist = np.linalg.norm(ball_pos - player)
-        score += 100 / (dist+1)
-    return score
-
 def dodgeScore(ball_pos, player_pos, max_distance=200):
     dist = min(np.linalg.norm(ball_pos - player_pos), max_distance)
-    # score = 0
-    # for player in blue_team:
-        # dist = np.linalg.norm(ball_pos - player)
-        # score += dist**2
     return dist
 
 def teamSpacingScore(blue_team, min_distance=30):

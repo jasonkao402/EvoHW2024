@@ -2,7 +2,7 @@ import pygame
 import random
 import numpy as np
 import pygame.freetype
-from dodgeUtil import attackScore, totalFitness, PlayerNeuralNetwork, tournament_selection, one_point_crossover, one_point_mutation, two_point_crossover
+from dodgeUtil import totalFitness, PlayerNeuralNetwork, tournament_selection, one_point_crossover, one_point_mutation, two_point_crossover
 # 初始化 pygame
 pygame.init()
 
@@ -120,10 +120,7 @@ while running:
         population_fitness = []
         for i, player in enumerate(blue_team):
             fitness = totalFitness(ball_pos, ball_speed, player, blue_team, FIELD_SIZE)
-            # textSur, rect = font.render(f"{fitness:.2f}", BLACK, WHITE)
-            # WINDOW.blit(textSur, player+OFFSET_POS*2)
             population_fitness.append(fitness)
-        # print(f"Generation {frameCount//10} {len(population_fitness)}")
         max_idx = np.argmax(population_fitness)
         print(f"Max fitness: {max(population_fitness)}")
         
@@ -179,11 +176,11 @@ while running:
     
     
     # show score text in-game
-    score_a = attackScore(ball_pos, blue_team)
-    score_d = totalFitness(ball_pos, ball_speed, blue_team[0], blue_team, FIELD_SIZE)
+    # score_a = attackScore(ball_pos, blue_team)
+    # score_d = totalFitness(ball_pos, ball_speed, blue_team[0], blue_team, FIELD_SIZE)
     
-    textSur, rect = font.render(f"ATK Score : {score_a:.2f}  DODGE Score : {score_d:.2f}", BLUE, WHITE)
-    WINDOW.blit(textSur, OFFSET_POS)
+    # textSur, rect = font.render(f"ATK Score : {score_a:.2f}  DODGE Score : {score_d:.2f}", BLUE, WHITE)
+    # WINDOW.blit(textSur, OFFSET_POS)
     # 繪製場地邊界
     pygame.draw.rect(WINDOW, GREEN, (OFFSET, OFFSET, FIELD_SIZE, FIELD_SIZE), 3)
 
