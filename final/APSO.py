@@ -13,9 +13,9 @@ dimensions = 2  # x and y positions
 w = 0.9         # Initial inertia weight
 c1 = 2.0        # Cognitive component
 c2 = 2.0        # Social component
-generations = 10
-max_velocity = 10
-min_velocity = -10
+generations = 5
+max_velocity = 5
+min_velocity = -5
 
 # Adaptive PSO Parameters
 w_max = 0.9
@@ -33,7 +33,7 @@ global_best_value = np.inf
 
 # Objective function: Minimize distance to mouse cursor
 def objective_function(position, target_position):
-    distance = np.linalg.norm(position - target_position) ** 2
+    distance = -np.linalg.norm(position - target_position)
     return distance
 
 # Adaptive Inertia weight function
@@ -68,7 +68,7 @@ while running:
             global_best_pos = particles_pos[i]
 
     # Update velocities and positions
-    for i in range(num_particles):
+    # for i in range(num_particles):
         r1, r2 = np.random.rand(2)  # Random coefficients between 0 and 1
         
         # Update velocity using adaptive inertia weight
@@ -83,7 +83,7 @@ while running:
         particles_pos[i] += particles_vel[i]
 
         # Keep particles within the screen boundaries
-        # particles_pos[i] = np.clip(particles_pos[i], [0, 0], [width, height])
+        particles_pos[i] = np.clip(particles_pos[i], [0, 0], [width, height])
 
     # Draw everything
     screen.fill((255, 255, 255))  # Clear screen with white background

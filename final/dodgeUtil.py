@@ -7,15 +7,15 @@ def attackScore(ball_pos, blue_team):
         score += 100 / (dist+1)
     return score
 
-def dodgeScore(ball_pos, player_pos):
-    score = np.linalg.norm(ball_pos - player_pos)
+def dodgeScore(ball_pos, player_pos, max_distance=200):
+    dist = min(np.linalg.norm(ball_pos - player_pos), max_distance)
     # score = 0
     # for player in blue_team:
         # dist = np.linalg.norm(ball_pos - player)
         # score += dist**2
-    return score
+    return dist
 
-def teamSpacingScore(blue_team, min_distance=10):
+def teamSpacingScore(blue_team, min_distance=30):
     # Encourage players to maintain a minimum distance from each other
     spacing_score = 0
     num_players = len(blue_team)
@@ -29,16 +29,15 @@ def teamSpacingScore(blue_team, min_distance=10):
             else:
                 spacing_score += dist**0.5  # small reward for keeping good distance
     
-    return spacing_score
+    return spacing_score/num_players  # Normalize by number of players
 
-def boundaryAvoidanceScore(blue_team, field_size):
+def boundaryAvoidanceScore(player_pos, field_size, margin=20):
     # Encourage players to stay away from the boundaries of the field
     boundary_penalty = 0
-    for player in blue_team:
-        x, y = player
-        dist_to_boundary = min(x, field_size - x, y, field_size - y)
-        if dist_to_boundary < 10:  # Assume a buffer zone of 10 units
-            boundary_penalty -= (10 - dist_to_boundary)**2
+    x, y = player_pos
+    dist_to_boundary = min(x, field_size - x, y, field_size - y)
+    if dist_to_boundary < margin:  # Assume a buffer zone of 10 units
+        boundary_penalty -= (margin - dist_to_boundary)**2
     return -boundary_penalty  # Negative penalty means it's subtracted from fitness
 
 def movementEfficiencyScore(previous_positions, current_positions):
@@ -49,41 +48,41 @@ def movementEfficiencyScore(previous_positions, current_positions):
         efficiency_score -= movement_distance**2  # Penalize unnecessary movement
     return efficiency_score
 
-def threatProximityScore(ball_pos, ball_velocity, blue_team):
+def threatProximityScore(ball_pos, ball_velocity, player_pos):
     # Penalize players in the direct threat path of the ball
     penalty_score = 0
-    for player in blue_team:
-        # Vector from ball to player
-        to_player_vector = player - ball_pos
-        # Normalize vectors
-        normalized_ball_velocity = ball_velocity / np.linalg.norm(ball_velocity)
-        normalized_to_player = to_player_vector / np.linalg.norm(to_player_vector)
-        
-        # Calculate cosine similarity
-        cosine_similarity = np.dot(normalized_ball_velocity, normalized_to_player)
-        
-        # If player is in the direct threat path (cosine similarity close to 1)
-        if cosine_similarity > 0.9:  # Threshold can be adjusted
-            penalty_score -= 100  # Heavier penalty for being in the path
+    to_player_vector = player_pos - ball_pos
+    # Normalize vectors
+    normalized_ball_velocity = ball_velocity / np.linalg.norm(ball_velocity)
+    normalized_to_player = to_player_vector / np.linalg.norm(to_player_vector)
+    
+    # Calculate cosine similarity
+    cosine_similarity = np.dot(normalized_ball_velocity, normalized_to_player)
+    
+    # If player is in the direct threat path (cosine similarity close to 1)
+    if cosine_similarity > 0.9:  # Threshold can be adjusted
+        penalty_score -= 100  # Heavier penalty for being in the path
     
     return penalty_score
 
-def totalFitness(ball_pos, ball_velocity, blue_team, previous_positions, field_size):
+def totalFitness(ball_pos, ball_velocity, player_pos, team_pos, field_size):
     # Combine multiple fitness components
-    dodge_score = dodgeScore(ball_pos, blue_team)
-    spacing_score = teamSpacingScore(blue_team)
-    boundary_score = boundaryAvoidanceScore(blue_team, field_size)
-    efficiency_score = movementEfficiencyScore(previous_positions, blue_team)
-    threat_penalty = threatProximityScore(ball_pos, ball_velocity, blue_team)
+    center_score = dodgeScore([field_size/2, field_size/2], player_pos)
+    dodge_score = dodgeScore(ball_pos, player_pos)
+    spacing_score = teamSpacingScore(team_pos)
+    # boundary_score = boundaryAvoidanceScore(player_pos, field_size)
+    # efficiency_score = movementEfficiencyScore(previous_positions, blue_team)
+    # threat_penalty = threatProximityScore(ball_pos, ball_velocity, player_pos)
     
     # Adjust the weights based on importance
-    total_score = (
-        3.0 * dodge_score + 
-        0.5 * spacing_score + 
-        0.3 * boundary_score + 
-        0.2 * efficiency_score +
-        1.0 * threat_penalty
-    )
+    total_score = sum([
+        -1.0* center_score,
+        # 3.0 * dodge_score,
+        # 1.0 * spacing_score,
+        # 0.8 * boundary_score +
+        # 0.2 * efficiency_score
+        # 1.0 * threat_penalty
+    ])
     
     return total_score
 
@@ -92,9 +91,14 @@ def elu6(x: np.ndarray) -> np.ndarray:
     return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
 
 class PlayerNeuralNetwork:
+    default_architecture = (8, [4], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
+        self.position = np.zeros(2)
+        self.velocity = np.zeros(2)
+        self.ball_pos = np.zeros(2)
+        self.ball_vel = np.zeros(2)
         layer_sizes = [input_size, *hidden_sizes, output_size]
         for i in range(len(layer_sizes) - 1):
             weights = np.random.randn(layer_sizes[i], layer_sizes[i + 1])
@@ -106,6 +110,8 @@ class PlayerNeuralNetwork:
         for weights, biases in self.layers:
             x = np.dot(x, weights) + biases
             x = elu6(x)
+        # Normalize the output to be within the range [-1, 1] with tanh
+        x = np.tanh(x)*2
         return x
 
     def get_weights(self):
@@ -135,15 +141,31 @@ def one_point_crossover(parent1, parent2):
     chromosome1 = parent1.get_weights()
     chromosome2 = parent2.get_weights()
     point = np.random.randint(1, len(chromosome1) - 1)
-    offspring1 = PlayerNeuralNetwork(6, [10, 10], 2)
-    offspring2 = PlayerNeuralNetwork(6, [10, 10], 2)
+    offspring1 = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
+    offspring2 = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
     offspring1.set_weights(np.concatenate([chromosome1[:point], chromosome2[point:]]))
     offspring2.set_weights(np.concatenate([chromosome2[:point], chromosome1[point:]]))
     return offspring1, offspring2
 
-def one_point_mutation(chromosome, mutation_rate, std_dev=0.1):
-    mutated_chromosome = chromosome.copy()
-    for i in range(len(chromosome)):
-        if np.random.rand() < mutation_rate:
-            mutated_chromosome[i] += np.random.normal(0, std_dev)
-    return mutated_chromosome
+def two_point_crossover(parent1, parent2):
+    chromosome1 = parent1.get_weights()
+    chromosome2 = parent2.get_weights()
+    points = np.sort(np.random.choice(len(chromosome1), 2, replace=False))
+    offspring1 = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
+    offspring2 = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
+    offspring1.set_weights(np.concatenate([chromosome1[:points[0]], chromosome2[points[0]:points[1]], chromosome1[points[1]:]]))
+    offspring2.set_weights(np.concatenate([chromosome2[:points[0]], chromosome1[points[0]:points[1]], chromosome2[points[1]:]]))
+    return offspring1, offspring2
+
+def one_point_mutation(chromosome, mutation_rate, std_dev=0.2):
+    # mutated_chromosome = chromosome.copy()
+    # for i in range(len(chromosome)):
+    #     if np.random.rand() < mutation_rate:
+    #         mutated_chromosome[i] += np.random.normal(0, std_dev)
+    # return mutated_chromosome
+    chromosome = chromosome.get_weights()
+    mutation_indices = np.random.rand(len(chromosome)) < mutation_rate
+    chromosome[mutation_indices] += np.random.normal(0, std_dev, mutation_indices.sum())
+    mutated_player = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
+    mutated_player.set_weights(chromosome)
+    return mutated_player

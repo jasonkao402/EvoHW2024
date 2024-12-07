@@ -82,7 +82,7 @@ while running:
     best_index = np.argmin(fitness)
     best_velocity = population[best_index]
     best_velocity = best_velocity / np.linalg.norm(best_velocity) * 5 if np.linalg.norm(best_velocity) > 5 else best_velocity
-    print(f"Generation {generation:3d}, Best Fitness: {fitness[best_index]:.3f}, Best Velocity: {best_velocity}")
+    print(f"Generation {generation:03d}, Best Fitness: {fitness[best_index]:7.3f}, Best Velocity: {best_velocity}")
     agent_position += best_velocity
     generation += 1
 
