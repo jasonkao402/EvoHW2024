@@ -6,10 +6,10 @@ from dodgeUtil import totalFitness, PlayerNeuralNetwork, distantScore
 pygame.init()
 
 # 設定視窗大小和顏色
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 700
+WINDOW_HEIGHT = 700
 FIELD_SIZE = 100
-ZOOM = 7
+ZOOM = 6
 OFFSET = (WINDOW_WIDTH - FIELD_SIZE * ZOOM) // 2
 OFFSET_POS = np.ones(2) *  OFFSET
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -29,7 +29,7 @@ BALL_RADIUS = 15
 BALL_SPEED = 0.5
 
 # DE parameters
-F = 0.9  # Mutation factor
+F = 0.8  # Mutation factor
 CR = 0.6  # Crossover probability
 generations = 100  # Number of generations
 pop_size = 60  # Population size
@@ -51,6 +51,7 @@ print(nn_population[0].layers)
 print(shape_of_weights.shape)
 
 population = np.array([player.get_weights() for player in nn_population])
+agent_position_ = np.random.uniform(0, FIELD_SIZE, 2)  # Single random starting position for all agents
 
 for gen in range(generations):
     for event in pygame.event.get():
@@ -61,7 +62,7 @@ for gen in range(generations):
         break
     # Randomize start and target positions
     # agent_positions = np.random.uniform(0, FIELD_SIZE, (pop_size, 2))  # Random starting positions
-    agent_position_ = np.random.uniform(0, FIELD_SIZE, 2)  # Single random starting position for all agents
+    agent_position_ = np.array([FIELD_SIZE, FIELD_SIZE]) - ball_pos
     agent_positions = np.tile(agent_position_, (pop_size, 1))
     agent_vel = np.zeros((pop_size, 2))
     # ball_pos = np.random.uniform(0, FIELD_SIZE, 2)
@@ -102,7 +103,7 @@ for gen in range(generations):
             else:
                 pygame.draw.circle(WINDOW, BLUE,  player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
             pygame.draw.line(WINDOW, WHITE, player * ZOOM + OFFSET_POS, (player + vel * BALL_RADIUS) * ZOOM + OFFSET_POS, 1)
-            textSur, rect = font.render(f"{accumulated_rewards[i]:7.2f}", GREEN)
+            textSur, rect = font.render(f"{accumulated_rewards[i]:9.2f}", GREEN)
             WINDOW.blit(textSur, player * ZOOM + OFFSET_POS)
             
         # 繪製球（黑色）
@@ -145,7 +146,8 @@ for gen in range(generations):
         nn_population[i].set_weights(population[i])
     # Logging progress
     best_fitness = max(accumulated_rewards)
-    print(f"Generation {gen + 1}, Best Fitness: {best_fitness}")
+    diversity = np.std(accumulated_rewards)
+    print(f"Generation {gen + 1}, Best Fitness: {best_fitness:9.2f}, Diversity: {diversity:9.2f}")
 
     # Return the best solution
     # best_idx = np.argmax(accumulated_rewards)

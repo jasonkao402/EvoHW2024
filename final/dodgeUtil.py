@@ -76,6 +76,13 @@ def elu6(x: np.ndarray) -> np.ndarray:
     # Apply ELU activation function and cap the output at 6
     return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
 
+def ReLU6(x: np.ndarray) -> np.ndarray:
+    # Apply ReLU activation function
+    return np.clip(x, -6, 6)
+
+def sigmoid(x: np.ndarray) -> np.ndarray:
+    # Apply sigmoid activation function
+    return 1 / (1 + np.exp(-x))
 class PlayerNeuralNetwork:
     default_architecture = (2, [4], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
@@ -92,9 +99,9 @@ class PlayerNeuralNetwork:
         # Forward pass through the neural network
         for weights, biases in self.layers:
             x = np.dot(x, weights) + biases
-            x = np.tanh(x)
+            x = ReLU6(x)
         # Normalize the output to be within the range [-1, 1] with tanh
-        # x = np.tanh(x)
+        x = np.tanh(x)
         return x
 
     def get_weights(self):
