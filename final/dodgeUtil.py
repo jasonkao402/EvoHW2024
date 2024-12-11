@@ -1,7 +1,7 @@
 import numpy as np
 
-def dodgeScore(ball_pos, player_pos, max_distance=200):
-    dist = min(np.linalg.norm(ball_pos - player_pos), max_distance)
+def distantScore(target_pos, player_pos):
+    dist = np.linalg.norm(target_pos - player_pos)
     return dist
 
 def teamSpacingScore(blue_team, min_distance=30):
@@ -56,16 +56,16 @@ def threatProximityScore(ball_pos, ball_velocity, player_pos):
 
 def totalFitness(ball_pos, ball_velocity, player_pos, team_pos, field_size):
     # Combine multiple fitness components
-    center_score = dodgeScore([field_size/2, field_size/2], player_pos)
-    dodge_score = dodgeScore(ball_pos, player_pos)
-    spacing_score = teamSpacingScore(team_pos)
+    center_score = -distantScore([field_size/2, field_size/2], player_pos)
+    # dodge_score = dodgeScore(ball_pos, player_pos)
+    # spacing_score = teamSpacingScore(team_pos)
     # boundary_score = boundaryAvoidanceScore(player_pos, field_size)
     # efficiency_score = movementEfficiencyScore(previous_positions, blue_team)
     # threat_penalty = threatProximityScore(ball_pos, ball_velocity, player_pos)
     
     # Adjust the weights based on importance
     total_score = sum([
-        -1.0* center_score,
+        1.0 * center_score,
         # 3.0 * dodge_score,
         # 1.0 * spacing_score,
         # 0.8 * boundary_score +
@@ -80,14 +80,16 @@ def elu6(x: np.ndarray) -> np.ndarray:
     return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
 
 class PlayerNeuralNetwork:
-    default_architecture = (8, [4], 2)
+    default_architecture = (4, [4], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
+        self.fitness = 0
         self.position = np.zeros(2)
         self.velocity = np.zeros(2)
         self.ball_pos = np.zeros(2)
         self.ball_vel = np.zeros(2)
+        
         layer_sizes = [input_size, *hidden_sizes, output_size]
         for i in range(len(layer_sizes) - 1):
             weights = np.random.randn(layer_sizes[i], layer_sizes[i + 1])
@@ -146,7 +148,7 @@ def two_point_crossover(parent1, parent2):
     offspring2.set_weights(np.concatenate([chromosome2[:points[0]], chromosome1[points[0]:points[1]], chromosome2[points[1]:]]))
     return offspring1, offspring2
 
-def one_point_mutation(chromosome, mutation_rate, std_dev=0.2):
+def one_point_mutation(chromosome, mutation_rate, std_dev=0.1):
     # mutated_chromosome = chromosome.copy()
     # for i in range(len(chromosome)):
     #     if np.random.rand() < mutation_rate:

@@ -2,7 +2,7 @@ import pygame
 import random
 import numpy as np
 import pygame.freetype
-from dodgeUtil import totalFitness, PlayerNeuralNetwork, tournament_selection, one_point_crossover, one_point_mutation, two_point_crossover
+from dodgeUtil import totalFitness, PlayerNeuralNetwork, tournament_selection, one_point_crossover, one_point_mutation, two_point_crossover, distantScore
 # 初始化 pygame
 pygame.init()
 
@@ -48,7 +48,7 @@ for i in range(NUM_PLAYERS):
         x *= FIELD_SIZE
     red_team.append((x, y))
 red_team = np.array(red_team)
-blue_team = np.random.uniform(50, FIELD_SIZE - 50, (NUM_PLAYERS, 2))
+# blue_team = np.random.uniform(50, FIELD_SIZE - 50, (NUM_PLAYERS, 2))
 
 # 初始化球位置
 ball_pos = np.array(red_team[0][:])
@@ -92,15 +92,23 @@ generations = 50
 pc, pm = 0.8, 0.05  # Crossover and mutation probabilities
 # Initialize population
 population = [PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture) for _ in range(NUM_PLAYERS)]
+for player in population:
+    player.position = np.random.uniform(50, FIELD_SIZE - 50, 2)
+    player.velocity = np.random.uniform(-1, 1, 2)
+    player.ball_pos = np.zeros(2)
+    player.ball_vel = np.zeros(2)
 max_idx = 0
 # def nearest
+accumulated_fitness = np.zeros(NUM_PLAYERS)
 while running:
+    blue_team = np.array([player.position for player in population])
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # 點擊滑鼠以丟球
-            target = find_nearby(np.array(pygame.mouse.get_pos())-OFFSET_POS, blue_team, amount=1)[0]
+            target = find_nearby(np.array(pygame.mouse.get_pos()) - OFFSET_POS, blue_team, amount=1)[0]
             # print(target)
             if np.linalg.norm(ball_pos - target) > 0:
                 direction = calculate_direction(ball_pos, target)
@@ -115,18 +123,16 @@ while running:
     if ball_pos[1] <= 0 or ball_pos[1] >= FIELD_SIZE:
         ball_speed[1] *= -1
 
-    if frameCount % 3 == 1:
+    accumulated_fitness += np.array([distantScore([FIELD_SIZE/2, FIELD_SIZE/2], player) for player in blue_team])
+    best_idx = np.argmax(accumulated_fitness)
         
-        population_fitness = []
-        for i, player in enumerate(blue_team):
-            fitness = totalFitness(ball_pos, ball_speed, player, blue_team, FIELD_SIZE)
-            population_fitness.append(fitness)
-        max_idx = np.argmax(population_fitness)
-        print(f"Max fitness: {max(population_fitness)}")
-        
+    if frameCount % 30 == 0:
+        for i, player in enumerate(population):
+            player.fitness = accumulated_fitness[i]
+            
         new_population = []
         while len(new_population) < NUM_PLAYERS//2:
-            parent1, parent2 = tournament_selection(population, population_fitness)
+            parent1, parent2 = tournament_selection(population, accumulated_fitness)
             
             if random.random() < pc:
                 offspring1, offspring2 = two_point_crossover(parent1, parent2)
@@ -137,54 +143,47 @@ while running:
                 offspring2 = one_point_mutation(offspring2, pm)
             new_population.extend([offspring1, offspring2])
             
-        population = population[:NUM_PLAYERS//2] + new_population
-    # print(len(population))
-    
+        population = sorted(population, key=lambda x: x.fitness, reverse=True)[:NUM_PLAYERS//2] + new_population
+        accumulated_fitness = np.zeros(NUM_PLAYERS)
+        
     # 繪製丟球方（紅色）
     for player in red_team:
-        pygame.draw.circle(WINDOW, RED, player+OFFSET_POS, PLAYER_RADIUS)
-
+        pygame.draw.circle(WINDOW, RED, player + OFFSET_POS, PLAYER_RADIUS)
     
     # 繪製躲球方（藍色）
     for i, player in enumerate(blue_team):
-        pygame.draw.circle(WINDOW, BLUE, player+OFFSET_POS, PLAYER_RADIUS)
-        if i == max_idx:
-            pygame.draw.circle(WINDOW, GREEN, player+OFFSET_POS, PLAYER_RADIUS)
         
+        if i == max_idx:
+            pygame.draw.circle(WINDOW, GREEN, player + OFFSET_POS, PLAYER_RADIUS)
+        else:
+            pygame.draw.circle(WINDOW, BLUE,  player + OFFSET_POS, PLAYER_RADIUS)
+        textSur, rect = font.render(f"{accumulated_fitness[i]:7.2f}", BLACK)
+        WINDOW.blit(textSur, player + OFFSET_POS)
 
     # 繪製球（黑色）
-    pygame.draw.circle(WINDOW, BLACK, ball_pos+OFFSET_POS, BALL_RADIUS)
+    pygame.draw.circle(WINDOW, BLACK, ball_pos + OFFSET_POS, BALL_RADIUS)
         
-    for i, player in enumerate(blue_team):
-        # print(population[i])
-        # 2d out of bounds
-        # player[player < 0] = 0
-        # player[player > FIELD_SIZE] = FIELD_SIZE
-        nearest = find_nearby(player, blue_team, amount=1)[0]-player
-        pygame.draw.line(WINDOW, GREEN, player+OFFSET_POS, player+OFFSET_POS+nearest, 2)
-        output_vec = population[i].forward(np.array([player[0]/FIELD_SIZE, player[1]/FIELD_SIZE, ball_pos[0]/FIELD_SIZE, ball_pos[1]/FIELD_SIZE, ball_speed[0], ball_speed[1], nearest[0]/FIELD_SIZE, nearest[1]/FIELD_SIZE]))
-        pygame.draw.line(WINDOW, BLACK, player+OFFSET_POS, player+OFFSET_POS+output_vec*PLAYER_RADIUS, 2)
-        player += output_vec
-        player[0] = np.clip(player[0], PLAYER_RADIUS*4, FIELD_SIZE-PLAYER_RADIUS*4)
-        player[1] = np.clip(player[1], PLAYER_RADIUS*4, FIELD_SIZE-PLAYER_RADIUS*4)
-        if np.linalg.norm(ball_pos - player) < PLAYER_RADIUS + BALL_RADIUS:
+    for i, player in enumerate(population):
+        
+        # nearest = find_nearby(player, blue_team, amount=1)[0] - player
+        # pygame.draw.line(WINDOW, GREEN, player + OFFSET_POS, player + OFFSET_POS + nearest, 2)
+        input_vec = np.array([player.position[0], player.position[1], player.velocity[0], player.velocity[1]])
+        player.velocity = population[i].forward(input_vec)
+        pygame.draw.line(WINDOW, BLACK, player.position + OFFSET_POS, player.position + OFFSET_POS + player.velocity * PLAYER_RADIUS, 2)
+        player.position += player.velocity
+        # player.position = np.clip(player.position, [PLAYER_RADIUS, PLAYER_RADIUS], [FIELD_SIZE - PLAYER_RADIUS, FIELD_SIZE - PLAYER_RADIUS])
+        player.position[0] = np.clip(player.position[0], PLAYER_RADIUS, FIELD_SIZE - PLAYER_RADIUS)
+        player.position[1] = np.clip(player.position[1], PLAYER_RADIUS, FIELD_SIZE - PLAYER_RADIUS)
+        if np.linalg.norm(ball_pos - player.position) < PLAYER_RADIUS + BALL_RADIUS:
             # 球回到紅隊成員位置
             ball_pos = np.array(random.choice(red_team))
             ball_speed = np.zeros(2)  # 球速歸零
             # break
     
-    
-    
-    # show score text in-game
-    # score_a = attackScore(ball_pos, blue_team)
-    # score_d = totalFitness(ball_pos, ball_speed, blue_team[0], blue_team, FIELD_SIZE)
-    
-    # textSur, rect = font.render(f"ATK Score : {score_a:.2f}  DODGE Score : {score_d:.2f}", BLUE, WHITE)
-    # WINDOW.blit(textSur, OFFSET_POS)
+    textSur, rect = font.render(f"Frame: {frameCount}", BLACK)
+    WINDOW.blit(textSur, OFFSET_POS/2)
     # 繪製場地邊界
     pygame.draw.rect(WINDOW, GREEN, (OFFSET, OFFSET, FIELD_SIZE, FIELD_SIZE), 3)
-
-    
 
     # 更新顯示
     pygame.display.flip()
