@@ -2,7 +2,7 @@ import numpy as np
 FIELD_SIZE = 500
 
 def distantScore(target_pos, player_pos):
-    dist = np.linalg.norm(target_pos - player_pos)**2
+    dist = np.linalg.norm(target_pos - player_pos)
     return dist
 
 def teamSpacingScore(blue_team, min_distance=30):
@@ -81,7 +81,7 @@ def elu6(x: np.ndarray) -> np.ndarray:
     return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
 
 class PlayerNeuralNetwork:
-    default_architecture = (4, [2, 2], 2)
+    default_architecture = (2, [], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
