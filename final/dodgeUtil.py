@@ -1,7 +1,8 @@
 import numpy as np
+FIELD_SIZE = 500
 
 def distantScore(target_pos, player_pos):
-    dist = np.linalg.norm(target_pos - player_pos)
+    dist = np.linalg.norm(target_pos - player_pos)**2
     return dist
 
 def teamSpacingScore(blue_team, min_distance=30):
@@ -80,12 +81,12 @@ def elu6(x: np.ndarray) -> np.ndarray:
     return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
 
 class PlayerNeuralNetwork:
-    default_architecture = (4, [4], 2)
+    default_architecture = (4, [2, 2], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
         self.fitness = 0
-        self.position = np.zeros(2)
+        self.position = np.random.uniform(50, FIELD_SIZE - 50, 2)
         self.velocity = np.zeros(2)
         self.ball_pos = np.zeros(2)
         self.ball_vel = np.zeros(2)
@@ -102,7 +103,7 @@ class PlayerNeuralNetwork:
             x = np.dot(x, weights) + biases
             x = elu6(x)
         # Normalize the output to be within the range [-1, 1] with tanh
-        x = np.tanh(x)*2
+        x = np.tanh(x)*5
         return x
 
     def get_weights(self):
@@ -134,6 +135,8 @@ def one_point_crossover(parent1, parent2):
     point = np.random.randint(1, len(chromosome1) - 1)
     offspring1 = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
     offspring2 = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
+    # offspring1.position = parent1.position
+    # offspring2.position = parent2.position
     offspring1.set_weights(np.concatenate([chromosome1[:point], chromosome2[point:]]))
     offspring2.set_weights(np.concatenate([chromosome2[:point], chromosome1[point:]]))
     return offspring1, offspring2
@@ -144,19 +147,22 @@ def two_point_crossover(parent1, parent2):
     points = np.sort(np.random.choice(len(chromosome1), 2, replace=False))
     offspring1 = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
     offspring2 = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
+    # offspring1.position = parent1.position
+    # offspring2.position = parent2.position
     offspring1.set_weights(np.concatenate([chromosome1[:points[0]], chromosome2[points[0]:points[1]], chromosome1[points[1]:]]))
     offspring2.set_weights(np.concatenate([chromosome2[:points[0]], chromosome1[points[0]:points[1]], chromosome2[points[1]:]]))
     return offspring1, offspring2
 
-def one_point_mutation(chromosome, mutation_rate, std_dev=0.1):
+def one_point_mutation(chromosome, mutation_rate, std_dev=0.02):
     # mutated_chromosome = chromosome.copy()
     # for i in range(len(chromosome)):
     #     if np.random.rand() < mutation_rate:
     #         mutated_chromosome[i] += np.random.normal(0, std_dev)
     # return mutated_chromosome
-    chromosome = chromosome.get_weights()
-    mutation_indices = np.random.rand(len(chromosome)) < mutation_rate
-    chromosome[mutation_indices] += np.random.normal(0, std_dev, mutation_indices.sum())
+    weights = chromosome.get_weights()
+    mutation_indices = np.random.rand(len(weights)) < mutation_rate
+    weights[mutation_indices] += np.random.normal(0, std_dev, mutation_indices.sum())
     mutated_player = PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture)
-    mutated_player.set_weights(chromosome)
+    # mutated_player.position = chromosome.position
+    mutated_player.set_weights(weights)
     return mutated_player
