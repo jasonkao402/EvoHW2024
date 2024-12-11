@@ -1,11 +1,11 @@
 import numpy as np
-FIELD_SIZE = 500
+FIELD_SIZE = 100
 
 def distantScore(target_pos, player_pos):
     dist = np.linalg.norm(target_pos - player_pos)
     return dist
 
-def teamSpacingScore(blue_team, min_distance=30):
+def teamSpacingScore(blue_team, min_distance=10):
     # Encourage players to maintain a minimum distance from each other
     spacing_score = 0
     num_players = len(blue_team)
@@ -21,22 +21,18 @@ def teamSpacingScore(blue_team, min_distance=30):
     
     return spacing_score/num_players  # Normalize by number of players
 
-def boundaryAvoidanceScore(player_pos, field_size, margin=20):
+def boundaryAvoidanceScore(player_pos, margin=20):
     # Encourage players to stay away from the boundaries of the field
     boundary_penalty = 0
     x, y = player_pos
-    dist_to_boundary = min(x, field_size - x, y, field_size - y)
+    dist_to_boundary = min(x, FIELD_SIZE - x, y, FIELD_SIZE - y)
     if dist_to_boundary < margin:  # Assume a buffer zone of 10 units
         boundary_penalty -= (margin - dist_to_boundary)**2
-    return -boundary_penalty  # Negative penalty means it's subtracted from fitness
+    return boundary_penalty  # Negative penalty means it's subtracted from fitness
 
-def movementEfficiencyScore(previous_positions, current_positions):
+def movementEfficiencyScore(player_vel):
     # Minimize excessive movement; reward for efficient dodging
-    efficiency_score = 0
-    for prev, curr in zip(previous_positions, current_positions):
-        movement_distance = np.linalg.norm(curr - prev)
-        efficiency_score -= movement_distance**2  # Penalize unnecessary movement
-    return efficiency_score
+    return -np.linalg.norm(player_vel)
 
 def threatProximityScore(ball_pos, ball_velocity, player_pos):
     # Penalize players in the direct threat path of the ball
@@ -55,22 +51,22 @@ def threatProximityScore(ball_pos, ball_velocity, player_pos):
     
     return penalty_score
 
-def totalFitness(ball_pos, ball_velocity, player_pos, team_pos, field_size):
+def totalFitness(target_pos, player_pos, player_vel):
     # Combine multiple fitness components
-    center_score = -distantScore([field_size/2, field_size/2], player_pos)
+    dist_score = -distantScore(target_pos, player_pos)
     # dodge_score = dodgeScore(ball_pos, player_pos)
     # spacing_score = teamSpacingScore(team_pos)
-    # boundary_score = boundaryAvoidanceScore(player_pos, field_size)
-    # efficiency_score = movementEfficiencyScore(previous_positions, blue_team)
+    boundary_score = boundaryAvoidanceScore(player_pos)
+    efficiency_score = movementEfficiencyScore(player_vel)
     # threat_penalty = threatProximityScore(ball_pos, ball_velocity, player_pos)
     
     # Adjust the weights based on importance
     total_score = sum([
-        1.0 * center_score,
+        10.0 * dist_score,
         # 3.0 * dodge_score,
         # 1.0 * spacing_score,
-        # 0.8 * boundary_score +
-        # 0.2 * efficiency_score
+        1.0 * boundary_score,
+        1.0 * efficiency_score,
         # 1.0 * threat_penalty
     ])
     
@@ -81,7 +77,7 @@ def elu6(x: np.ndarray) -> np.ndarray:
     return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
 
 class PlayerNeuralNetwork:
-    default_architecture = (4, [4], 2)
+    default_architecture = (2, [4], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
@@ -96,9 +92,9 @@ class PlayerNeuralNetwork:
         # Forward pass through the neural network
         for weights, biases in self.layers:
             x = np.dot(x, weights) + biases
-            x = elu6(x)
+            x = np.tanh(x)
         # Normalize the output to be within the range [-1, 1] with tanh
-        x = np.tanh(x)
+        # x = np.tanh(x)
         return x
 
     def get_weights(self):
