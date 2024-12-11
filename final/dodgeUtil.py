@@ -81,19 +81,14 @@ def elu6(x: np.ndarray) -> np.ndarray:
     return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
 
 class PlayerNeuralNetwork:
-    default_architecture = (2, [], 2)
+    default_architecture = (4, [4], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
-        self.fitness = 0
-        self.position = np.random.uniform(50, FIELD_SIZE - 50, 2)
-        self.velocity = np.zeros(2)
-        self.ball_pos = np.zeros(2)
-        self.ball_vel = np.zeros(2)
         
         layer_sizes = [input_size, *hidden_sizes, output_size]
         for i in range(len(layer_sizes) - 1):
-            weights = np.random.randn(layer_sizes[i], layer_sizes[i + 1])
+            weights = np.random.randn(layer_sizes[i], layer_sizes[i + 1]) * np.sqrt(1 / layer_sizes[i]) # Xavier initialization
             biases = np.random.randn(layer_sizes[i + 1])
             self.layers.append((weights, biases))
     
@@ -103,7 +98,7 @@ class PlayerNeuralNetwork:
             x = np.dot(x, weights) + biases
             x = elu6(x)
         # Normalize the output to be within the range [-1, 1] with tanh
-        x = np.tanh(x)*5
+        x = np.tanh(x)
         return x
 
     def get_weights(self):
