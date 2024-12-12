@@ -1,58 +1,59 @@
 import numpy as np
-FIELD_SIZE = 100
-
+FIELD_SIZE = 1
+PROXIMITY = 0.02
 def distantScore(target_pos, player_pos):
-    dist = 1 / np.linalg.norm(target_pos - player_pos)
+    dist = np.linalg.norm(target_pos - player_pos)
     return dist
 
-def boundaryAvoidanceScore(player_pos, margin=5):
+def boundaryAvoidanceScore(player_pos):
     # Encourage players to stay away from the boundaries of the field
     boundary_penalty = 0
     x, y = player_pos
     dist_to_boundary = min(x, FIELD_SIZE - x, y, FIELD_SIZE - y)
-    if dist_to_boundary < margin:  # Assume a buffer zone of 10 units
+    if dist_to_boundary < PROXIMITY:  # Assume a buffer zone of 10 units
         # boundary_penalty -= (margin - dist_to_boundary)**2
-        boundary_penalty -= dist_to_boundary**2
+        boundary_penalty -= dist_to_boundary
     return boundary_penalty  # Negative penalty means it's subtracted from fitness
 
 def movementEfficiencyScore(player_vel):
     # Minimize excessive movement; reward for efficient dodging
     return -np.linalg.norm(player_vel)
 
-def threatProximityScore(ball_pos, ball_velocity, player_pos):
+def directionScore(target_pos, player_pos, player_vel):
     # Penalize players in the direct threat path of the ball
     penalty_score = 0
-    to_player_vector = player_pos - ball_pos
     # Normalize vectors
-    normalized_ball_velocity = ball_velocity / np.linalg.norm(ball_velocity)
-    normalized_to_player = to_player_vector / np.linalg.norm(to_player_vector)
+    dir_vector = target_pos - player_pos
+    magnitude = np.linalg.norm(player_vel)
+    normalized_vel = player_vel / magnitude
+    normalized_to_player = dir_vector / np.linalg.norm(dir_vector)
     
     # Calculate cosine similarity
-    cosine_similarity = np.dot(normalized_ball_velocity, normalized_to_player)
+    cosine_similarity = np.dot(normalized_vel, normalized_to_player)
     
     # If player is in the direct threat path (cosine similarity close to 1)
-    if cosine_similarity > 0.9:  # Threshold can be adjusted
-        penalty_score -= 100  # Heavier penalty for being in the path
+    if cosine_similarity > 0.8:  # Threshold can be adjusted
+        penalty_score += magnitude
     
     return penalty_score
 
-def totalFitness(target_pos, player_pos, player_vel):
+def totalFitness(target_pos, target_vel, player_pos, player_vel):
     # Combine multiple fitness components
-    dist_score = distantScore(target_pos, player_pos)
-    # dodge_score = dodgeScore(ball_pos, player_pos)
+    dist_score = -distantScore(target_pos, player_pos)
     # spacing_score = teamSpacingScore(team_pos)
     boundary_score = boundaryAvoidanceScore(player_pos)
     efficiency_score = movementEfficiencyScore(player_vel)
-    # threat_penalty = threatProximityScore(ball_pos, ball_velocity, player_pos)
+    dir_score = directionScore(target_pos, player_pos, player_vel)
+    touch_dist = int(np.linalg.norm(target_pos - player_pos) < PROXIMITY)
     
     # Adjust the weights based on importance
     total_score = sum([
-        5.0 * dist_score,
-        # 3.0 * dodge_score,
+        3.0 * dist_score,
         # 1.0 * spacing_score,
         1.0 * boundary_score,
-        1.0 * efficiency_score,
-        # 1.0 * threat_penalty
+        0.1 * efficiency_score,
+        3.0 * dir_score,
+        1000 * touch_dist,
     ])
     
     return total_score
@@ -73,7 +74,7 @@ def sigmoid_centered(x: np.ndarray) -> np.ndarray:
     # Apply sigmoid activation function and center the output at 0
     return 2 / (1 + np.exp(-x)) - 1
 class PlayerNeuralNetwork:
-    default_architecture = (4, [6, 6], 2)
+    default_architecture = (4, [8, 4], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
@@ -110,7 +111,7 @@ class PlayerNeuralNetwork:
             idx += weight_size + biases.size
             
 def tournament_selection(population, fitness_values, tournament_size=3):
-    tournament_indices = np.random.choice(len(population), size=tournament_size*2, replace=False)
+    tournament_indices = np.random.choice(len(population), size=tournament_size, replace=False)
     tournament_fitness = [-fitness_values[i] for i in tournament_indices]
-    idx = np.argsort(tournament_fitness)[:2]  # Pick the top 2
+    idx = np.argsort(tournament_fitness)[:2]
     return population[tournament_indices[idx[0]]], population[tournament_indices[idx[1]]]
