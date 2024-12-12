@@ -2,7 +2,7 @@ import numpy as np
 FIELD_SIZE = 100
 
 def distantScore(target_pos, player_pos):
-    dist = np.linalg.norm(target_pos - player_pos)
+    dist = 1 / np.linalg.norm(target_pos - player_pos)
     return dist
 
 def boundaryAvoidanceScore(player_pos, margin=5):
@@ -38,7 +38,7 @@ def threatProximityScore(ball_pos, ball_velocity, player_pos):
 
 def totalFitness(target_pos, player_pos, player_vel):
     # Combine multiple fitness components
-    dist_score = -distantScore(target_pos, player_pos)
+    dist_score = distantScore(target_pos, player_pos)
     # dodge_score = dodgeScore(ball_pos, player_pos)
     # spacing_score = teamSpacingScore(team_pos)
     boundary_score = boundaryAvoidanceScore(player_pos)
@@ -68,6 +68,10 @@ def ReLU6(x: np.ndarray) -> np.ndarray:
 def sigmoid(x: np.ndarray) -> np.ndarray:
     # Apply sigmoid activation function
     return 1 / (1 + np.exp(-x))
+
+def sigmoid_centered(x: np.ndarray) -> np.ndarray:
+    # Apply sigmoid activation function and center the output at 0
+    return 2 / (1 + np.exp(-x)) - 1
 class PlayerNeuralNetwork:
     default_architecture = (4, [6, 6], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
@@ -84,7 +88,8 @@ class PlayerNeuralNetwork:
         # Forward pass through the neural network
         for weights, biases in self.layers:
             x = np.dot(x, weights) + biases
-            x = np.tanh(x)
+            x = np.tanh(x)  # Apply activation function
+        
         return x
 
     def get_weights(self):

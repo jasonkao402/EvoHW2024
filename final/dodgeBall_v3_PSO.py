@@ -28,10 +28,10 @@ PLAYER_RADIUS = 10
 BALL_RADIUS = 15
 BALL_SPEED = 0.5
 
-# DE parameters
-F = 0.5  # Mutation factor
-E = 0.1  # Elitism factor
-CR = 0.8  # Crossover probability
+# PSO parameters
+inertia = 0.5  # Inertia weight
+c1 = 1.5  # Cognitive (particle) weight
+c2 = 1.5  # Social (swarm) weight
 generations = 100  # Number of generations
 pop_size = 80  # Population size
 episode_length = 120  # Length of each episode
@@ -54,8 +54,15 @@ for layer in nn_population[0].layers:
 print(shape_of_weights.shape)
 
 population = np.array([player.get_weights() for player in nn_population])
+
 agent_position_ = np.random.uniform(0, FIELD_SIZE, 2)  # Single random starting position for all agents
 accumulated_rewards = np.zeros(pop_size)
+
+# Initialize PSO
+personal_best_value = np.full(pop_size, np.inf)
+personal_best_pos = np.copy(population)
+global_best_value = np.inf
+global_best_pos = None
 
 for gen in range(generations):
     for event in pygame.event.get():
@@ -133,28 +140,35 @@ for gen in range(generations):
         # 控制更新速度
         clock.tick(60)
         frameCount += 1
-        
-    # Genetic operations
-    new_population = np.zeros_like(population)
+    
     for i in range(pop_size):
-        # Mutation: Select three random individuals
-        idxs = np.random.choice([x for x in range(pop_size) if x != i], 3, replace=False)
-        x1, x2, x3 = population[idxs]
-        mutant = x1 + F * (x2 - x3) + E * (population[max_idx] - x1)
+        # Update personal best
+        fitness = accumulated_rewards[i]
+        if fitness < personal_best_value[i]:
+            personal_best_value[i] = fitness
+            personal_best_pos[i] = population[i]
+        
+        # Update global best
+        if fitness < global_best_value:
+            global_best_value = fitness
+            global_best_pos = population[i]
+            
+        r1 = np.random.rand(*shape_of_weights.shape)
+        r2 = np.random.rand(*shape_of_weights.shape)
 
-        # Crossover
-        trial = np.copy(population[i])
-        mutate_indices = np.random.uniform(size=shape_of_weights.shape) < CR
-        trial[mutate_indices] = mutant[mutate_indices]
+        # Update velocity
+        # Update velocity using adaptive inertia weight
+        cognitive_component = c1 * r1 * (personal_best_pos[i] - population[i])
+        social_component = c2 * r2 * (global_best_pos - population[i])
+        population[i] = inertia * population[i] + cognitive_component + social_component
 
-        # Selection
-        # overwrite if trial_fitness is better than previous
-        if accumulated_rewards[i] >= prev_rewards[i]:
-            new_population[i] = trial
-        else:
-            new_population[i] = population[i]
+    for i in range(pop_size):
+        nn_population[i].set_weights(population[i])
+    # Logging progress
+    best_fitness = max(accumulated_rewards)
+    diversity = np.std(accumulated_rewards)
+    print(f"Generation {gen + 1}, Best Fitness: {best_fitness:9.2f}, Diversity: {diversity:9.2f}")
 
-    population = new_population
     for i in range(pop_size):
         nn_population[i].set_weights(population[i])
     # Logging progress

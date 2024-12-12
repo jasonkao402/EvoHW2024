@@ -140,7 +140,7 @@ for gen in range(generations):
         # Mutation: Select three random individuals
         idxs = np.random.choice([x for x in range(pop_size) if x != i], 3, replace=False)
         x1, x2, x3 = population[idxs]
-        mutant = x1 + F * (x2 - x3) + E * (population[max_idx] - x1)
+        mutant = x1 + F * (x2 - x3)
 
         # Crossover
         trial = np.copy(population[i])

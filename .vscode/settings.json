@@ -6,6 +6,7 @@
         "axhline",
         "beautifulsoup",
         "blit",
+        "deap",
         "figsize",
         "freetype",
         "idxs",
@@ -13,11 +14,15 @@
         "linestyle",
         "mcolors",
         "probs",
+        "pset",
         "randn",
         "tqdm",
         "trange",
         "xlabel",
         "ylabel",
         "yticks"
+    ],
+    "cSpell.enableFiletypes": [
+        "!python"
     ]
 }
