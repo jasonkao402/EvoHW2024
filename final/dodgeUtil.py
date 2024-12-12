@@ -1,70 +1,39 @@
 import numpy as np
 FIELD_SIZE = 1
-PROXIMITY = 0.02
-def distantScore(target_pos, player_pos):
-    dist = np.linalg.norm(target_pos - player_pos)
-    return dist
-
-def boundaryAvoidanceScore(player_pos):
-    # Encourage players to stay away from the boundaries of the field
-    boundary_penalty = 0
-    x, y = player_pos
-    dist_to_boundary = min(x, FIELD_SIZE - x, y, FIELD_SIZE - y)
-    if dist_to_boundary < PROXIMITY:  # Assume a buffer zone of 10 units
-        # boundary_penalty -= (margin - dist_to_boundary)**2
-        boundary_penalty -= dist_to_boundary
-    return boundary_penalty  # Negative penalty means it's subtracted from fitness
-
-def movementEfficiencyScore(player_vel):
-    # Minimize excessive movement; reward for efficient dodging
-    return -np.linalg.norm(player_vel)
+PROXIMITY = 0.05
+CENTER = np.array([FIELD_SIZE, FIELD_SIZE]) / 2
 
 def directionScore(target_pos, player_pos, player_vel):
-    # Penalize players in the direct threat path of the ball
-    penalty_score = 0
+    dir_score = 0
     # Normalize vectors
     dir_vector = target_pos - player_pos
-    magnitude = np.linalg.norm(player_vel)
-    normalized_vel = player_vel / magnitude
+    normalized_vel = player_vel / np.linalg.norm(player_vel)
     normalized_to_player = dir_vector / np.linalg.norm(dir_vector)
     
     # Calculate cosine similarity
-    cosine_similarity = np.dot(normalized_vel, normalized_to_player)
+    cosine_similarity = np.dot(normalized_vel, normalized_to_player) 
     
-    # If player is in the direct threat path (cosine similarity close to 1)
-    if cosine_similarity > 0.8:  # Threshold can be adjusted
-        penalty_score += magnitude
+    if cosine_similarity > 0.7:  # Threshold can be adjusted
+        dir_score += cosine_similarity
     
-    return penalty_score
+    return dir_score
 
 def totalFitness(target_pos, target_vel, player_pos, player_vel):
     # Combine multiple fitness components
-    dist_score = -distantScore(target_pos, player_pos)
-    # spacing_score = teamSpacingScore(team_pos)
-    boundary_score = boundaryAvoidanceScore(player_pos)
-    efficiency_score = movementEfficiencyScore(player_vel)
+    dist_score = -np.sum(np.abs(target_pos - player_pos))
+    efficiency_score = -np.linalg.norm(player_vel)
     dir_score = directionScore(target_pos, player_pos, player_vel)
-    touch_dist = int(np.linalg.norm(target_pos - player_pos) < PROXIMITY)
+    # touch_dist = int(np.linalg.norm(target_pos - player_pos) < PROXIMITY)
     
     # Adjust the weights based on importance
     total_score = sum([
-        3.0 * dist_score,
-        # 1.0 * spacing_score,
-        1.0 * boundary_score,
-        0.1 * efficiency_score,
-        3.0 * dir_score,
-        1000 * touch_dist,
+        4.0 * dist_score,
+        # 1.0 * center_score,
+        1.0 * efficiency_score,
+        5.0 * dir_score,
+        # 100 * touch_dist,
     ])
-    
     return total_score
-
-def elu6(x: np.ndarray) -> np.ndarray:
-    # Apply ELU activation function and cap the output at 6
-    return np.clip(np.where(x > 0, x, np.exp(x) - 1), None, 6)
-
-def ReLU6(x: np.ndarray) -> np.ndarray:
-    # Apply ReLU activation function
-    return np.clip(x, -6, 6)
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
     # Apply sigmoid activation function
@@ -73,8 +42,9 @@ def sigmoid(x: np.ndarray) -> np.ndarray:
 def sigmoid_centered(x: np.ndarray) -> np.ndarray:
     # Apply sigmoid activation function and center the output at 0
     return 2 / (1 + np.exp(-x)) - 1
+
 class PlayerNeuralNetwork:
-    default_architecture = (4, [8, 4], 2)
+    default_architecture = (6, [6, 4], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
@@ -89,7 +59,7 @@ class PlayerNeuralNetwork:
         # Forward pass through the neural network
         for weights, biases in self.layers:
             x = np.dot(x, weights) + biases
-            x = np.tanh(x)  # Apply activation function
+            x = np.tanh(x)
         
         return x
 
