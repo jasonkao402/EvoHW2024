@@ -111,6 +111,6 @@ class PlayerNeuralNetwork:
             
 def tournament_selection(population, fitness_values, tournament_size=3):
     tournament_indices = np.random.choice(len(population), size=tournament_size*2, replace=False)
-    tournament_fitness = [fitness_values[i] for i in tournament_indices]
-    idx = np.argmax(tournament_fitness[:tournament_size]), np.argmax(tournament_fitness[tournament_size:])
+    tournament_fitness = [-fitness_values[i] for i in tournament_indices]
+    idx = np.argsort(tournament_fitness)[:2]  # Pick the top 2
     return population[tournament_indices[idx[0]]], population[tournament_indices[idx[1]]]

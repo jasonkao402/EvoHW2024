@@ -1,15 +1,13 @@
 import pygame
 import numpy as np
 import pygame.freetype
-from dodgeUtil import totalFitness, PlayerNeuralNetwork
+from dodgeUtil import totalFitness
 from stable_baselines3 import SAC
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, VecMonitor
 from stable_baselines3.common.evaluation import evaluate_policy
 from gymnasium import spaces
 import gymnasium as gym
 
-# Initialize pygame
-pygame.init()
 
 # Settings
 WINDOW_WIDTH = 700
@@ -18,8 +16,6 @@ FIELD_SIZE = 100
 ZOOM = 6
 OFFSET = (WINDOW_WIDTH - FIELD_SIZE * ZOOM) // 2
 OFFSET_POS = np.ones(2) * OFFSET
-WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption("Dodgeball Simulation")
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -34,9 +30,6 @@ BALL_RADIUS = 15
 BALL_SPEED = 0.5
 BALL_DECAY = 0.98  # Simulated air resistance
 
-# Pygame clock and font
-clock = pygame.time.Clock()
-font = pygame.freetype.SysFont('Arial', 24)
 
 # Define environment
 class DodgeballEnv(gym.Env):
@@ -81,10 +74,11 @@ class DodgeballEnv(gym.Env):
 
 # Initialize environment and model
 env = DummyVecEnv([lambda: DodgeballEnv()])
+env = VecMonitor(env)
 model = SAC("MlpPolicy", env, verbose=1)
 
 # Training parameters
-TRAINING_TIMESTEPS = 10000
+TRAINING_TIMESTEPS = 1000
 EVAL_EPISODES = 10
 
 def train_and_visualize():
@@ -95,12 +89,20 @@ def train_and_visualize():
     print(f"Mean reward: {mean_reward}, Std: {std_reward}")
 
     obs = env.reset()
-    for _ in range(1000):
+    # Initialize pygame
+    pygame.init()
+    WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    pygame.display.set_caption("Dodgeball Simulation")
+    # Pygame clock and font
+    clock = pygame.time.Clock()
+    # font = pygame.freetype.SysFont('Arial', 24)
+    
+    for _ in range(10):
         # Predict action
         action, _ = model.predict(obs, deterministic=True)
 
         # Take a step in the environment
-        obs, reward, done, info = env.step(action)
+        obs, reward, done, _, info = env.step(action)
 
         # Visualization
         WINDOW.fill(GRAY)

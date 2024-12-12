@@ -1,16 +1,15 @@
 import pygame
-import random
 import numpy as np
 import pygame.freetype
-from dodgeUtil import totalFitness, PlayerNeuralNetwork, tournament_selection, one_point_crossover, one_point_mutation, two_point_crossover, distantScore
+from dodgeUtil import totalFitness, PlayerNeuralNetwork, distantScore, tournament_selection
 # 初始化 pygame
 pygame.init()
 
 # 設定視窗大小和顏色
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 700
+WINDOW_HEIGHT = 700
 FIELD_SIZE = 100
-ZOOM = 7
+ZOOM = 6
 OFFSET = (WINDOW_WIDTH - FIELD_SIZE * ZOOM) // 2
 OFFSET_POS = np.ones(2) *  OFFSET
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -18,61 +17,27 @@ pygame.display.set_caption("Dodgeball Simulation")
 
 # 定義顏色
 WHITE = (255, 255, 255)
+GRAY  = (32, 32, 32)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
+RED   = (255, 0, 0)
+GREEN = (0, 232, 152)
+BLUE  = (0, 118, 214)
 
 # 定義參數
 PLAYER_RADIUS = 10
 BALL_RADIUS = 15
-NUM_PLAYERS = 40
-OFFSPRING = 30
-BALL_SPEED = 4
-EPISODE_LENGTH = 30
-pc, pm = 0.9, 0.1  # Crossover and mutation probabilities
+BALL_SPEED = 0.5
+BALL_DRAG = 0.98
 
-# 初始化球員位置
-red_team = []
-for i in range(OFFSPRING):
-    x = np.random.uniform(0, 1)
-    y = np.random.uniform(0, 1)
-    if i % 2 == 0:
-        if x < 0.5:
-            x = 0
-        else:
-            x = FIELD_SIZE
-        y *= FIELD_SIZE
-    else:
-        if y < 0.5:
-            y = 0
-        else:
-            y = FIELD_SIZE
-        x *= FIELD_SIZE
-    red_team.append((x, y))
-red_team = np.array(red_team)
-# 初始化球位置
-ball_pos = np.array(red_team[0][:])
+generations = 100  # Number of generations
+pop_size = 80  # Population size
+episode_length = 120  # Length of each episode
+discount = 0.9  # Discount factor
+crossover_rate = 0.8  # Crossover probability
+mutate_rate = 0.1  # Mutation rate
+
+ball_pos = np.random.uniform(0, FIELD_SIZE, 2)
 ball_speed = np.zeros(2)
-
-def find_nearby(center_pos, teammates, radius=200, amount=3):
-    result = np.zeros((amount, 2))
-    dists = np.linalg.norm(teammates - center_pos, axis=1)
-    # ignore self (dist < EPS) and dist > radius
-    dists[dists < 1e-6] = float('inf')
-    dists[dists > radius] = float('inf')
-    idx = np.argsort(dists)
-    for i in range(amount):
-        result[i] = teammates[idx[i]]
-    return result[:amount]
-
-# 計算向量單位向量
-def calculate_direction(source, target):
-    direction = np.array(target) - np.array(source)
-    return direction / np.linalg.norm(direction)
-
-def calculate_distance(source, target):
-    return np.linalg.norm(np.array(target) - np.array(source))
 
 # 遊戲主迴圈
 running = True
@@ -81,126 +46,122 @@ clock = pygame.time.Clock()
 font = pygame.freetype.SysFont('Arial', 24)
 
 # Initialize population
-population = [PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture) for _ in range(NUM_PLAYERS)]
-print(population[0].layers)
-print(population[0].get_weights().shape)
+nn_population = [PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture) for _ in range(pop_size)]
+shape_of_weights = nn_population[0].get_weights()
+for layer in nn_population[0].layers:
+    print(layer[0].shape, layer[1].shape)
+print(shape_of_weights.shape)
 
-for player in population:
-    player.position = np.random.uniform(0, FIELD_SIZE, 2)
-    player.velocity = np.random.uniform(-1, 1, 2)
-    player.ball_pos = np.zeros(2)
-    player.ball_vel = np.zeros(2)
-max_idx = 0
-# def nearest
-accumulated_fitness = np.zeros(NUM_PLAYERS)
-while running:
-    blue_team = np.array([player.position for player in population])
-    
+population = np.array([player.get_weights() for player in nn_population])
+agent_position_ = np.random.uniform(0, FIELD_SIZE, 2)  # Single random starting position for all agents
+accumulated_rewards = np.zeros(pop_size)
+
+for gen in range(generations):
     for event in pygame.event.get():
+        # force quit
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            # 點擊滑鼠以丟球
-            target = find_nearby(np.array(pygame.mouse.get_pos()) - OFFSET_POS, blue_team, amount=1)[0]
-            # print(target)
-            if np.linalg.norm(ball_pos - target) > 0:
-                direction = calculate_direction(ball_pos, target)
-                ball_speed = BALL_SPEED * direction
-
-    # 更新球位置
-    ball_pos += ball_speed
-    ball_speed *= 0.99  # 模擬空氣阻力
-    # 碰撞邊界反彈
-    if ball_pos[0] <= 0 or ball_pos[0] >= FIELD_SIZE:
-        ball_speed[0] *= -1
-    if ball_pos[1] <= 0 or ball_pos[1] >= FIELD_SIZE:
-        ball_speed[1] *= -1
-
-    # t = 
-    # print(t.shape)
-    accumulated_fitness += np.array([-distantScore(ball_pos, player) for player in blue_team])
+            ball_pos = (np.array(pygame.mouse.get_pos()) - OFFSET_POS) / ZOOM
+            
+    if not running:
+        break
+    # Randomize start and target positions
+    # agent_positions = np.random.uniform(0, FIELD_SIZE, (pop_size, 2))  # Random starting positions
+    agent_position_ = np.array([FIELD_SIZE, FIELD_SIZE]) - ball_pos
+    agent_positions = np.tile(agent_position_, (pop_size, 1))
+    agent_vel = np.zeros((pop_size, 2))
+    # ball_pos = np.random.uniform(0, FIELD_SIZE, 2)
+    ball_speed = np.random.uniform(-BALL_SPEED, BALL_SPEED, 2)
+    # target_positions = ball_pos
+    prev_rewards = np.copy(accumulated_rewards)
+    accumulated_rewards = np.zeros(pop_size)
+    
+    # Run episode
+    max_idx = 0
+    for step in range(episode_length):
+        # 更新球位置
+        ball_pos += ball_speed
+        ball_speed *= BALL_DRAG
+        # 碰撞邊界反彈
+        if ball_pos[0] <= BALL_RADIUS or ball_pos[0] >= FIELD_SIZE - BALL_RADIUS:
+            ball_speed[0] *= -1
+        if ball_pos[1] <= BALL_RADIUS or ball_pos[1] >= FIELD_SIZE - BALL_RADIUS:
+            ball_speed[1] *= -1
         
-    if frameCount % EPISODE_LENGTH == 0:
-        best_idx = np.argmax(accumulated_fitness)
-        print(population[best_idx].layers)
-        for i, player in enumerate(population):
-            player.fitness = accumulated_fitness[i]
-            
-        new_population = []
-        while len(new_population) < OFFSPRING:
-            parent1, parent2 = tournament_selection(population, accumulated_fitness, tournament_size=5)
-            
-            if random.random() < pc:
-                offspring1, offspring2 = two_point_crossover(parent1, parent2)
+        for i in range(pop_size):
+            inputs = np.array([*agent_positions[i]/FIELD_SIZE, *ball_pos/FIELD_SIZE])
+            # if i == max_idx:
+            #     print(inputs, end='\r')
+            agent_vel[i] = nn_population[i].forward(inputs)
+            agent_positions[i] += agent_vel[i]
+            # agent_positions[i] = np.clip(agent_positions[i], 0, FIELD_SIZE)
+            fitness = totalFitness(ball_pos, agent_positions[i], agent_vel[i])
+            # biased towards the end of the episode
+            accumulated_rewards[i] += fitness * discount ** (episode_length - step)
+        max_idx = np.argmax(accumulated_rewards)
+        
+        # 清空畫面
+        WINDOW.fill(GRAY)
+        # 繪製丟球方（紅色）
+        # for player in red_team:
+        #     pygame.draw.circle(WINDOW, RED, player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
+        
+        # 繪製躲球方（藍色）
+        for i, (player, vel) in enumerate(zip(agent_positions, agent_vel)):
+            if i == max_idx:
+                pygame.draw.circle(WINDOW, GREEN, player * ZOOM + OFFSET_POS, PLAYER_RADIUS+2)
             else:
-                offspring1, offspring2 = parent1, parent2
-            if random.random() < pc:
-                offspring1 = one_point_mutation(offspring1, pm)
-                offspring2 = one_point_mutation(offspring2, pm)
-            new_population.extend([offspring1, offspring2])
+                pygame.draw.circle(WINDOW, BLUE,  player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
+            pygame.draw.line(WINDOW, WHITE, player * ZOOM + OFFSET_POS, (player + vel * BALL_RADIUS) * ZOOM + OFFSET_POS, 1)
+            textSur, rect = font.render(f"[{i:2d}]", GREEN)
+            WINDOW.blit(textSur, player * ZOOM + OFFSET_POS)
+            
+        # 繪製球（黑色）
+        pygame.draw.circle(WINDOW, RED, ball_pos * ZOOM + OFFSET_POS, BALL_RADIUS)
         
-        # overwrite the worst half of the population
-        population = sorted(population, key=lambda x: x.fitness, reverse=True)[:-OFFSPRING] + new_population
-        accumulated_fitness = np.zeros(NUM_PLAYERS)
+        textSur, rect = font.render(f"Frame: {frameCount}, Episode: {frameCount//episode_length}", GREEN)
+        WINDOW.blit(textSur, OFFSET_POS/2)
+        # 繪製場地邊界
+        pygame.draw.rect(WINDOW, GREEN, (OFFSET, OFFSET, FIELD_SIZE * ZOOM, FIELD_SIZE * ZOOM), 3)
+
+        # 更新顯示
+        pygame.display.flip()
         
-        # reset the position and velocity of the population
-        ball_speed = np.random.uniform(-BALL_SPEED, BALL_SPEED, 2)
-        ball_pos = np.random.uniform(BALL_RADIUS, FIELD_SIZE - BALL_RADIUS, 2)
-        for player in population:
-            # deg = np.random.uniform(0, 2*np.pi)
-            # player.position = np.array([FIELD_SIZE/2 + np.cos(deg)*FIELD_SIZE/2, FIELD_SIZE/2 + np.sin(deg)*FIELD_SIZE/2])
-            # player.position = np.random.uniform(50, FIELD_SIZE - 50, 2)
-            # player.velocity = np.random.uniform(-1, 1, 2)
-            player.ball_pos = ball_pos
-            player.ball_vel = ball_speed
+        # 控制更新速度
+        clock.tick(60)
+        frameCount += 1
         
-    # 繪製丟球方（紅色）
-    for player in red_team:
-        pygame.draw.circle(WINDOW, RED, player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
-    
-    # 繪製躲球方（藍色）
-    for i, player in enumerate(blue_team):
-        
-        if i == max_idx:
-            pygame.draw.circle(WINDOW, GREEN, player * ZOOM + OFFSET_POS, PLAYER_RADIUS+2)
+    # Genetic operations
+    new_population = np.zeros_like(population)
+    for i in range(pop_size):
+        # Select parents
+        parent1, parent2 = tournament_selection(population, accumulated_rewards, tournament_size=5)
+        # Crossover - single point
+        if np.random.rand() < crossover_rate:
+            crossover_point = np.random.randint(1, shape_of_weights.size)
+            new_population[i] = np.concatenate([parent1[:crossover_point], parent2[crossover_point:]])
         else:
-            pygame.draw.circle(WINDOW, BLUE,  player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
-        textSur, rect = font.render(f"{accumulated_fitness[i]:7.2f}", BLACK)
-        WINDOW.blit(textSur, player * ZOOM + OFFSET_POS)
-
-    # 繪製球（黑色）
-    pygame.draw.circle(WINDOW, BLACK, ball_pos * ZOOM + OFFSET_POS, BALL_RADIUS)
-        
-    for i, player in enumerate(population):
-        
-        # nearest = find_nearby(player, blue_team, amount=1)[0] - player
-        # pygame.draw.line(WINDOW, GREEN, player + OFFSET_POS, player + OFFSET_POS + nearest, 2)
-        # input_vec = np.array([player.position[0]/FIELD_SIZE, player.position[1]/FIELD_SIZE, ball_pos[0]/FIELD_SIZE, ball_pos[1]/FIELD_SIZE])
-        # player.velocity = population[i].forward(input_vec)
-        input_vec = (ball_pos - player.position) / FIELD_SIZE
-        # player.velocity = population[i].forward(input_vec)
-        player.velocity = input_vec * 5
-        pygame.draw.line(WINDOW, BLACK, player.position * ZOOM + OFFSET_POS, player.position * ZOOM + OFFSET_POS + player.velocity * PLAYER_RADIUS, 2)
-        player.position += player.velocity
-        player.position = np.clip(player.position, [PLAYER_RADIUS, PLAYER_RADIUS], [FIELD_SIZE - PLAYER_RADIUS, FIELD_SIZE - PLAYER_RADIUS])
-        # if np.linalg.norm(ball_pos - player.position) < PLAYER_RADIUS + BALL_RADIUS:
-        #     # 球回到紅隊成員位置
-        #     ball_pos = np.array(random.choice(red_team))
-        #     ball_speed = np.zeros(2)  # 球速歸零
-        #     # break
+            new_population[i] = parent1
+        # Mutation
+        if np.random.rand() < mutate_rate:
+            mutate_idx = np.random.randint(0, shape_of_weights.size)
+            new_population[i][mutate_idx] += np.random.randn() * 0.1
+        # Bound the weights
+        new_population[i] = np.clip(new_population[i], -10, 10)
+    population = new_population
     
-    textSur, rect = font.render(f"Frame: {frameCount}, Episode: {frameCount//EPISODE_LENGTH}", BLACK)
-    WINDOW.blit(textSur, OFFSET_POS/2)
-    # 繪製場地邊界
-    pygame.draw.rect(WINDOW, GREEN, (OFFSET, OFFSET, FIELD_SIZE * ZOOM, FIELD_SIZE * ZOOM), 3)
+    for i in range(pop_size):
+        nn_population[i].set_weights(population[i])
+    # Logging progress
+    best_fitness = max(accumulated_rewards)
+    diversity = np.std(accumulated_rewards)
+    print(f"Generation {gen + 1}, Best Fitness: {best_fitness:9.2f}, Diversity: {diversity:9.2f}")
 
-    # 更新顯示
-    pygame.display.flip()
+    # Return the best solution
+    # best_idx = np.argmax(accumulated_rewards)
     
-    # 控制更新速度
-    clock.tick(40)
-    frameCount += 1
-    # 清空畫面
-    WINDOW.fill(WHITE)
 # 結束 pygame
 pygame.quit()
+
+print("Best solution: ", nn_population[max_idx].layers)
