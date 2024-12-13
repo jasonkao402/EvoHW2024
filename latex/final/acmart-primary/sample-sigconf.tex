@@ -19,7 +19,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Neural Network Optimization using Genetic Algorithms}
+\title{Neural Network Optimization using Genetic Algorithms on Target Pursuing Task}
 
 \begin{CJK}{UTF8}{bkai}
   \author{高聖傑}
@@ -59,7 +59,7 @@ Real-time visual representation will be implemented in a 2D environment using a 
 \subsection{Environment}
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\linewidth]{imgs/demo01.png}
+  \includegraphics[width=0.8\linewidth]{imgs/demo01.png}
   \caption{The agents learning to pursue the target.}
   \Description{The agents learning to pursue the target.}
   \label{fig:ball_demo}
@@ -75,7 +75,7 @@ As shown in \xfig{fig:ball_demo}, the simulation will include the following visi
 \subsection{Neural Network}
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\linewidth]{imgs/NeuralNetwork.png}
+  \includegraphics[width=0.8\linewidth]{imgs/NeuralNetwork.png}
   \caption{The structure of the neural network.}
   \Description{The structure of the neural network.}
   \label{fig:neural_network}
@@ -109,50 +109,53 @@ The fitness function consists of the following components:
 The fitness function is the sum of the above components, and it is being calculated and accumulated for each time step during the episode.
 The accumulated reward is the actuall fitness function used to evaluate the performance and stability of the agents.
 \subsection{Inspirations from Reinforcement Learning}
+The environment in this task is highly dynamic, which means the genetic algorithm needs to be able to adapt to the changes in the environment as time progresses. Using the accumulated reward as the fitness function, long-term rewards are encouraged, and the agents are expected to learn to pursue the target effectively.
+An episode in this project consists of 100 time steps, the agents are evaluated based on their performance in each episode. The following techniques from the field of reinforcement learning are used to improve the performance of the agents:
 \begin{enumerate}
   \item \textbf{Curriculum Learning:} Curriculum learning is a training strategy in which the difficulty of the task is gradually increased during training. In this project, the speed of the target is gradually increased during the first 20\% of the generation, and then kept constant for the rest of the generation.
-  \item \textbf{Accumulated Reward and Discount Factor:} The accumulated reward is used as the fitness function, which is the sum of the rewards at each time step. The accumulated reward is used to encourage the agent to reach the target as quickly as possible. On top of this, a discount factor $\gamma = 0.99$ is used to reduce the old rewards in the episode, the reward at time step $t$ is multiplied by $\gamma^t$. The accumulated reward is calculated as follows:
-  \begin{equation}
-    R_t = \sum_{i=t}^{T} \gamma^{i-t} r_i
-    \label{eq:discount}
-  \end{equation}
+  \item \textbf{Accumulated Reward and Discount Factor:} The accumulated reward is used as the fitness function, which is the sum of the rewards at each time step. The accumulated reward is used to encourage the agent to reach the target as quickly as possible. On top of this, a discount factor $\gamma = 0.99$ is used to reduce the old rewards in the episode, with lower values of $\gamma$ the agent will be greedy and focus on the immediate reward, while higher values of $\gamma$ will encourage the agent to focus on the long-term reward. 
 \end{enumerate}
-
+The accumulated reward $G_t$ is calculated as follows:
+\begin{equation}
+  G_t = R_t + \gamma R_{t+1} + \gamma^2 R_{t+2} + \ldots + \gamma^{T-t} R_T = \sum_{i=t}^{T} \gamma^{i-t} r_i
+  \label{eq:discount}
+\end{equation}
+wherer $R_t$ is the reward at time step $t$, $T$ is the total number of time steps in the episode, and $\gamma$ is the discount factor.
 
 \section{Experiment Results}
 \subsection{Distance to Target}
-\begin{figure*}[t]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0619.png}
+  \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0619.pdf}
   \caption{The performance of the agents over the generations.}
   \Description{The performance of the agents over the generations.}
   \label{fig:plot_all}
-\end{figure*}
-
+\end{figure}
+as shown in \xfig{fig:plot_all}, the agents are able to learn to pursue the target effectively, the distance to the target decreases over the generations. During the warm-up period in the first 20\% of the generation, while we did not see the best fitness getting substa
 \subsection{Fitness Function Analysis}
-\begin{figure*}[t]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0633_dist_only.png}
+  \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0633_dist_only.pdf}
   \caption{Using only the distance to target as the fitness function.}
   \Description{Using only the distance to target as the fitness function.}
   \label{fig:plot_dist}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[t]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0634_rank_only.png}
+  \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0634_rank_only.pdf}
   \caption{Using only the rank of distance as the fitness function.}
   \Description{Using only the rank of distance as the fitness function.}
   \label{fig:plot_rank}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[t]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0636_dir_only.png}
+  \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0636_dir_only.pdf}
   \caption{Using only the direction to target as the fitness function.}
   \Description{Using only the direction to target as the fitness function.}
   \label{fig:plot_dir}
-\end{figure*}
+\end{figure}
 \section{Conclusion}
 
 \bibliographystyle{ACM-Reference-Format}

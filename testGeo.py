@@ -41,5 +41,5 @@ plt.legend()
 plt.grid()
 
 plt.tight_layout()
-plt.savefig(f'result_{listDir[idx]}.png')
+plt.savefig(f'result_{listDir[idx]}.pdf')
 plt.show()
