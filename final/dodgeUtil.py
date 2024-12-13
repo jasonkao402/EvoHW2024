@@ -1,7 +1,5 @@
 import numpy as np
-FIELD_SIZE = 10
 PROXIMITY = 0.05
-CENTER = np.array([FIELD_SIZE, FIELD_SIZE]) / 2
 
 def directionScore(target_pos, player_pos, player_vel, threshold=0.8):
     # Normalize vectors
@@ -17,15 +15,13 @@ def directionScore(target_pos, player_pos, player_vel, threshold=0.8):
 def totalFitness(target_pos, target_vel, player_pos, player_vel, dist_rank, max_dist):
     # Combine multiple fitness components
     dist_score = -np.linalg.norm(target_pos - player_pos)**2 / max_dist
-    efficiency_score = -np.linalg.norm(player_vel)
+    # efficiency_score = -np.linalg.norm(player_vel)
     dir_score = directionScore(target_pos, player_pos, player_vel)
-    # touch_dist = int(np.linalg.norm(target_pos - player_pos) < PROXIMITY)
     
     # Adjust the weights based on importance
     total_score = sum([
         1.0 * dist_score,
-        2.0 * dist_rank,
-        # 0.5 * efficiency_score,
+        1.0 * dist_rank,
         1.0 * dir_score,
     ])
     return total_score

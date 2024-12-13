@@ -2,21 +2,22 @@ import pygame
 import numpy as np
 import pygame.freetype
 from dodgeUtil import totalFitness, PlayerNeuralNetwork, tournament_selection
+import os
 import time
 import pandas as pd
 
 pygame.init()
 
 # 設定視窗大小和顏色
-WINDOW_WIDTH = 700
-WINDOW_HEIGHT = 700
+WINDOW_WIDTH = 600
+WINDOW_HEIGHT = 600
 FIELD_SIZE = 10
-ZOOM = 60
+ZOOM = 500 / FIELD_SIZE
 OFFSET = (WINDOW_WIDTH - FIELD_SIZE * ZOOM) // 2
 OFFSET_POS = np.ones(2) *  OFFSET
 PLAYER_RADIUS = 5
 BALL_RADIUS = 15
-BALL_SPEED = .15
+BALL_SPEED = FIELD_SIZE * 0.01
 BALL_DRAG = 0.999
 
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -29,16 +30,16 @@ BLACK = (0, 0, 0)
 RED   = (255, 0, 0)
 GREEN = (0, 232, 152)
 BLUE  = (0, 118, 214)
-CYAN  = (16, 214, 232)
+CYAN  = (16, 210, 250)
 # GA parameters
 crossover_rate = 0.85  # Crossover probability
 mutate_rate = 0.25  # Mutation rate
 generations = 100  # Number of generations
 pop_size = 100  # Population size
-episode_length = 120  # Length of each episode
+episode_length = 100  # Length of each episode
 discount = 0.99  # Discount factor
 weight_bound = 2.0  # Bound for weights and biases
-warm_up = 0.3 # Fraction of generations to warm up
+warm_up = 0.2 # Fraction of generations to warm up
 
 ball_pos = np.random.uniform(0, FIELD_SIZE, 2)
 ball_vel = np.zeros(2)
@@ -49,6 +50,8 @@ draw = False
 clock = pygame.time.Clock()
 font = pygame.freetype.SysFont('Consolas', 20)
 
+dir_name = f'Run_cx{crossover_rate}_mut{mutate_rate}_{time.strftime("%Y_%m%d_%H%M")}'
+os.makedirs(dir_name, exist_ok=True)
 REPEAT = 5
 for _ in range(REPEAT):
     # Initialize population
@@ -64,7 +67,7 @@ for _ in range(REPEAT):
     accumulated_rewards = np.zeros(pop_size)
 
     frameCount = 0
-    df = pd.DataFrame(columns=['Generation', 'Best Fitness', 'Mean Fitness', 'Diversity'])
+    df = pd.DataFrame(columns=['Generation', 'Best Fitness', 'Mean Fitness', 'Diversity', 'Distance'])
     for gen in range(generations):
         for event in pygame.event.get():
             # force quit
@@ -93,9 +96,9 @@ for _ in range(REPEAT):
             
             # 碰撞邊界反彈
             if ball_pos[0] <= 0 or ball_pos[0] >= FIELD_SIZE:
-                ball_vel[0] *= -1.2
+                ball_vel[0] *= -1.1
             if ball_pos[1] <= 0 or ball_pos[1] >= FIELD_SIZE:
-                ball_vel[1] *= -1.2
+                ball_vel[1] *= -1.1
             # 更新球位置
             ball_pos += ball_vel
             ball_vel *= BALL_DRAG
@@ -172,11 +175,12 @@ for _ in range(REPEAT):
         best_fitness = max(accumulated_rewards)
         mean_fitness = np.mean(accumulated_rewards)
         diversity = np.std(accumulated_rewards)
-        print(f"Gen {gen + 1:03d}, Best Fit: {best_fitness:9.2f}, Mean Fit: {mean_fitness:9.2f}, Div: {diversity:9.2f}")
-        df.loc[gen] = [gen, best_fitness, mean_fitness, diversity]
+        distance_ = np.linalg.norm(agent_positions[max_idx] - ball_pos)
+        print(f"Gen {gen + 1:03d}, Best Fit: {best_fitness:9.2f}, Mean Fit: {mean_fitness:9.2f}, Div: {diversity:9.2f}, Dist: {distance_:9.2f}")
+        df.loc[gen] = [gen, best_fitness, mean_fitness, diversity, distance_]
         
-    filename = f"GA_cx{crossover_rate}_mut{mutate_rate}_{time.strftime('%Y%m%d%H%M%S')}.csv"
-    df.to_csv(filename, index=False)
+    filename = f"GA_{time.strftime('%Y%m%d%H%M%S')}.csv"
+    df.to_csv(os.path.join(dir_name, filename), index=False)
     print("Best solution:")
     print(*nn_population[max_idx].layers, sep='\n')
 

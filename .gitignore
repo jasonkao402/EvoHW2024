@@ -306,3 +306,4 @@ TSWLatexianTemp*
 #*Notes.bib
 *pdf
 __pycache__/
+*.csv
