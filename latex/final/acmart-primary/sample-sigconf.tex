@@ -67,7 +67,7 @@ Real-time visual representation will be implemented in a 2D environment using a 
 As shown in \xfig{fig:ball_demo}, the simulation will include the following visible components:
 \begin{itemize}
   \item \textbf{Game Arena:} A 2D field with defined boundaries, defined by a rectangle outlined in green.
-  \item \textbf{Pursuing Agents:} AI agents, colored in blue, capable of moving in the 2D environment with the objective of pursuing the target.
+  \item \textbf{Pursuing Agents:} AI agents, colored in blue, capable of moving in the 2D environment with the objective of pursuing the target. The one with the highest fitness value will be highlighted in green, while the one closest to the target will be highlighted in cyan.
   \item \textbf{Velocity indicator:} White line segments indicating the velocity vector of the agents, with the length of the line segment proportional to the magnitude of the velocity. This helps us visualize the direction and magnitude of the velocity of the agent.
   \item \textbf{Target Ball:} A simple ball, colored in red, with simulated physics, serving as the target for the pursuing agents.
 \end{itemize}
@@ -80,27 +80,28 @@ As shown in \xfig{fig:ball_demo}, the simulation will include the following visi
   \Description{The structure of the neural network.}
   \label{fig:neural_network}
 \end{figure}
-The neural network in this project is shown in \xfig{fig:neural_network}. It is a simple fully connected feedforward neural network implemented using Numpy library. The input of the neural network are the following:
+The neural network in this project is shown in \xfig{fig:neural_network}. It is a fully connected neural network implemented using Numpy library. The input of the neural network are the following:
 \begin{enumerate}
   \item The position of the agent
   \item The position of the target
   \item The velocity of the agent
 \end{enumerate}
 which are concatenated into a single vector.
-The output of the neural network is the two dimensional velocity vector of the agent. The neural network consisted of two hidden layers, each with 8 neurons, the activation function used is the tanh function. The neural network is trained using a genetic algorithm over an episode of 120 steps to minimize the distance between the agent and the target.
+The output of the neural network is the two dimensional velocity vector of the agent. Two hidden layers, each with 8 neurons, is in the middle, the activation function used is the tanh function. The neural network is trained using a genetic algorithm over an episode of 120 steps to minimize the distance between the agent and the target.
 
 \subsection{Genetic Algorithm}
-\subsubsection{Chromosome Design} The chromosome is a vector of real numbers representing the weights of the neural network. The chromosome is represented as a 1D array of real numbers, the weights of the neural network are flattened and concatenated into a single vector. The weights will be clipped to a upper and lower bound after mutation and crossover to prevent gradient explosion and vanishing.
+\subsubsection{Chromosome Design} The chromosome is a vector of real numbers representing the weights and biases of the neural network, flattened and represented as a 1D array of real numbers, the weights of the neural network are flattened and concatenated into a single vector. The weights will be clipped to a upper and lower bound after mutation and crossover to prevent gradient explosion and vanishing.
 \subsubsection{Population Initialization} The population is initialized with Xavier initialization \cite{Xavier_pmlr-v9-glorot10a}, the weights are sampled from a normal distribution with mean 0 and standard deviation $\sqrt{\frac{2}{n_{in} + n_{out}}}$, where $n_{in}$ and $n_{out}$ are the number of input and output neurons respectively.
 \subsubsection{Selection} Tournament Selection with a tournament size of 5 is used, the best and second best chromosomes are selected as parents.
 \subsubsection{Crossover} One-point crossover is used with a probability of $\mu_c$, a random point is selected and the genes after the point are swapped between the two parents.
-\subsubsection{Mutation} Uniform mutation is used, each gene has a probability of $\mu_m$ to be mutated by a random value sampled from a normal distribution with mean 0 and standard deviation 0.1.
+\subsubsection{Mutation} An modified version of uniform mutation is used with a probability of $\mu_m$. Geometric distribution is used to determine expected number of genes to be mutated on average, which is 4\% of the total number of genes in the chromosome. The selected indices are then mutated by a random value sampled from a normal distribution with mean 0 and standard deviation 0.1. 
 \subsubsection{Fitness Function}
 The fitness function consists of the following components:
 \begin{enumerate}
-  \item \textbf{Distance to Target:} The distance between the agent and the target.
+  \item \textbf{Distance to Target:} The squared distance between the agent and the target.
+  \item \textbf{Rank of Distance:} The rank of the distance to the target among all agents, normalized to the range $[0, 1]$ where 1 is the closest agent to the target.
   \item \textbf{Direction to Target:} The cosine similarity between the direction of the agent and the direction to the target.
-  \item \textbf{Efficiency:} 
+  \item \textbf{Efficiency:} This act as a penalty term to encourage the agent 
 \end{enumerate}
 \subsection{Inspirations from Reinforcement Learning}
 \begin{enumerate}

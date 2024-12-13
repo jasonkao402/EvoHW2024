@@ -3,8 +3,7 @@ FIELD_SIZE = 10
 PROXIMITY = 0.05
 CENTER = np.array([FIELD_SIZE, FIELD_SIZE]) / 2
 
-def directionScore(target_pos, player_pos, player_vel):
-    dir_score = 0
+def directionScore(target_pos, player_pos, player_vel, threshold=0.8):
     # Normalize vectors
     dir_vector = target_pos - player_pos
     normalized_vel = player_vel / np.linalg.norm(player_vel)
@@ -13,14 +12,11 @@ def directionScore(target_pos, player_pos, player_vel):
     # Calculate cosine similarity
     cosine_similarity = np.dot(normalized_vel, normalized_to_player) 
     
-    if cosine_similarity > 0.8:  # Threshold can be adjusted
-        dir_score += cosine_similarity
-    
-    return dir_score
+    return cosine_similarity if cosine_similarity > threshold else 0
 
-def totalFitness(target_pos, target_vel, player_pos, player_vel, dist_rank):
+def totalFitness(target_pos, target_vel, player_pos, player_vel, dist_rank, max_dist):
     # Combine multiple fitness components
-    dist_score = -np.linalg.norm(target_pos - player_pos)**2 
+    dist_score = -np.linalg.norm(target_pos - player_pos)**2 / max_dist
     efficiency_score = -np.linalg.norm(player_vel)
     dir_score = directionScore(target_pos, player_pos, player_vel)
     # touch_dist = int(np.linalg.norm(target_pos - player_pos) < PROXIMITY)
@@ -28,8 +24,8 @@ def totalFitness(target_pos, target_vel, player_pos, player_vel, dist_rank):
     # Adjust the weights based on importance
     total_score = sum([
         1.0 * dist_score,
-        1.0 * dist_rank,
-        1.0 * efficiency_score,
+        2.0 * dist_rank,
+        # 0.5 * efficiency_score,
         1.0 * dir_score,
     ])
     return total_score
@@ -80,8 +76,8 @@ class PlayerNeuralNetwork:
             )
             idx += weight_size + biases.size
             
-def tournament_selection(population, fitness_values, tournament_size=3):
+def tournament_selection(population, fitness_values, tournament_size, topk):
     tournament_indices = np.random.choice(len(population), size=tournament_size, replace=False)
-    tournament_fitness = [-fitness_values[i] for i in tournament_indices]
-    idx = np.argsort(tournament_fitness)[:2]
-    return population[tournament_indices[idx[0]]], population[tournament_indices[idx[1]]]
+    tournament_fitness = [fitness_values[i] for i in tournament_indices]
+    idx = np.argpartition(tournament_fitness, -topk)[-topk:]
+    return [population[tournament_indices[j]] for j in idx]
