@@ -14,7 +14,7 @@ OFFSET_POS = np.ones(2) *  OFFSET
 PLAYER_RADIUS = 5
 BALL_RADIUS = 15
 BALL_SPEED = .025
-BALL_DRAG = 0.99
+BALL_DRAG = 0.98
 
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Dodgeball Simulation GA")
@@ -29,11 +29,11 @@ BLUE  = (0, 118, 214)
 
 # GA parameters
 crossover_rate = 0.85  # Crossover probability
-mutate_rate = 0.2  # Mutation rate
+mutate_rate = 0.25  # Mutation rate
 generations = 100  # Number of generations
 pop_size = 100  # Population size
 episode_length = 120  # Length of each episode
-discount = 0.98  # Discount factor
+discount = 0.99  # Discount factor
 weight_bound = 2.0  # Bound for weights and biases
 
 ball_pos = np.random.uniform(0, FIELD_SIZE, 2)

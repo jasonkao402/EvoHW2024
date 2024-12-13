@@ -13,14 +13,14 @@ def directionScore(target_pos, player_pos, player_vel):
     # Calculate cosine similarity
     cosine_similarity = np.dot(normalized_vel, normalized_to_player) 
     
-    if cosine_similarity > 0.7:  # Threshold can be adjusted
+    if cosine_similarity > 0.8:  # Threshold can be adjusted
         dir_score += cosine_similarity
     
     return dir_score
 
 def totalFitness(target_pos, target_vel, player_pos, player_vel):
     # Combine multiple fitness components
-    dist_score = -np.sum(np.abs(target_pos - player_pos))
+    dist_score = 1 / np.sum(np.abs(target_pos - player_pos))
     efficiency_score = -np.linalg.norm(player_vel)
     dir_score = directionScore(target_pos, player_pos, player_vel)
     # touch_dist = int(np.linalg.norm(target_pos - player_pos) < PROXIMITY)
@@ -44,14 +44,15 @@ def sigmoid_centered(x: np.ndarray) -> np.ndarray:
     return 2 / (1 + np.exp(-x)) - 1
 
 class PlayerNeuralNetwork:
-    default_architecture = (6, [6, 4], 2)
+    default_architecture = (6, [6, 6], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []
         
         layer_sizes = [input_size, *hidden_sizes, output_size]
         for i in range(len(layer_sizes) - 1):
-            weights = np.random.randn(layer_sizes[i], layer_sizes[i + 1]) * np.sqrt(1 / layer_sizes[i]) # Xavier initialization
+            # Kaiming initialization
+            weights = np.random.normal(0, np.sqrt(2 / layer_sizes[i]), (layer_sizes[i], layer_sizes[i + 1]))
             biases = np.random.randn(layer_sizes[i + 1])
             self.layers.append((weights, biases))
     

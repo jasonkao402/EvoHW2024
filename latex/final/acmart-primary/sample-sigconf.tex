@@ -99,11 +99,16 @@ The fitness function consists of the following components:
   \item \textbf{Distance to Target:} The distance between the agent and the target.
   \item \textbf{Direction to Target:} The cosine similarity between the direction of the agent and the direction to the target.
   \item \textbf{Efficiency:} 
+\end{enumerate}
 \subsection{Inspiration from Reinforcement Learning}
 \begin{enumerate}
   \item \textbf{Curriculum Learning}
   \item \textbf{Accumulated Reward}
-  \item \textbf{Discount Factor}
+  \item \textbf{Discount Factor} A discount factor $\gamma$ is used to discount the future rewards, the reward at time step $t$ is multiplied by $\gamma^t$
+  \begin{equation}
+    R_t = \sum_{i=t}^{T} \gamma^{i-t} r_i
+    \label{eq:discount}
+  \end{equation}
 \end{enumerate}
 
 
