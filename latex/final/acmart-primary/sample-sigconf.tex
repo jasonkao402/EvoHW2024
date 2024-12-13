@@ -44,36 +44,38 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-Artificial neural networks have been widely used in various fields, such as image recognition, natural language processing, and game AI. However, the performance of neural networks is highly dependent on the choice of hyperparameters and the optimization algorithm. In this project, we propose an unusual approach of using genetic algorithms to optimize the weights of neural networks. We will implement a genetic algorithm to train a neural network to perform on a task of pursuing a target in a 2D environment. We also got inspiration from several techniques from the field of reinforcement learning, such as cirrcrium learning, accumulated reward and discount factor. The goal of this project is to demonstrate that genetic algorithms can be used to train neural networks.
+Artificial neural networks have been widely used in various fields, such as image recognition, natural language processing, and game AI. Gradient-based optimization algorithms, such as stochastic gradient descent, are commonly used to train neural networks. In this project, we propose an unusual approach of using genetic algorithms to optimize the weights of neural networks. We will implement a genetic algorithm to train a neural network to perform on a task of pursuing a target in a 2D environment. We also got inspiration from several techniques from the field of reinforcement learning, such as cirrcrium learning, accumulated reward and discount factor. The goal of this project is to demonstrate that genetic algorithms can be used to train neural networks. The results show that the neural network trained using genetic algorithms can also achieve satisfactory performance on the task of pursuing a target in a 2D environment. 
 \end{abstract}
 
 \maketitle
 \end{CJK}
 
 \section{Introduction}
-When it comes to training neural networks, the most common approach is to use gradient-based optimization algorithms, such as stochastic gradient descent (SGD) and its variants. Since this task is a non-convex optimization problem, genetic algorithms, which are a type of evolutionary algorithm, can be used as an alternative optimization algorithm. Genetic algorithms are inspired by the process of natural selection and are capable of finding good solutions to optimization problems in a wide range of domains. 
+When it comes to training neural networks, the most common approach is to use gradient-based optimization algorithms, such as stochastic gradient descent (SGD) and its variants. Since this task is a non-convex optimization problem, genetic algorithms, which are a type of evolutionary algorithm, can be used as an alternative optimization algorithm. Genetic algorithms are inspired by the process of natural evolution and survival of the fittest, finging good solutions to optimization problems in a wide range of domains.
+In artifical neural network research, genetic algorithms have been used to optimize the \textbf{architecture} of neural networks \cite{wu2021trainingNI} and the \textbf{weights} of neural networks \cite{NN_GA_DavidJ_10.5555/1623755.1623876}, or both simultaneously \cite{stanley2002evolving,NDE_Karl_10.1145/3067695.3075967}. Unlike gradient-based optimization algorithms, genetic algorithms do not require the gradient of the objective function, and rely on the population-based exploration strategy to traverse the search space, making them suitable for optimizing non-differentiable and non-convex functions. 
 
 \section{Implementation Details}
 Real-time visual representation will be implemented in a 2D environment using a Python package called ``pygame'', allowing us to observe the evolving strategies in action. 
 \subsection{Environment}
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{demo01.png}
-  \caption{The performance of the neural network during training.}
-  \Description{The performance of the neural network during training.}
+  \includegraphics[width=0.95\linewidth]{imgs/demo01.png}
+  \caption{The agents learning to pursue the target.}
+  \Description{The agents learning to pursue the target.}
   \label{fig:ball_demo}
 \end{figure}
 As shown in \xfig{fig:ball_demo}, the simulation will include the following visible components:
 \begin{itemize}
   \item \textbf{Game Arena:} A 2D field with defined boundaries, defined by a rectangle outlined in green.
-  \item \textbf{Pursuing Agent:} A simple agent, colored in blue, capable of moving in the 2D environment with the objective of pursuing a target.
-  \item \textbf{Ball Physics:} A simple ball, colored in red, with simulated physics, serving as the target for the pursuing agent.
+  \item \textbf{Pursuing Agents:} AI agents, colored in blue, capable of moving in the 2D environment with the objective of pursuing the target.
+  \item \textbf{Velocity indicator:} White line segments indicating the velocity vector of the agents, with the length of the line segment proportional to the magnitude of the velocity. This helps us visualize the direction and magnitude of the velocity of the agent.
+  \item \textbf{Target Ball:} A simple ball, colored in red, with simulated physics, serving as the target for the pursuing agents.
 \end{itemize}
 
 \subsection{Neural Network}
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{NeuralNetwork.png}
+  \includegraphics[width=0.95\linewidth]{imgs/NeuralNetwork.png}
   \caption{The structure of the neural network.}
   \Description{The structure of the neural network.}
   \label{fig:neural_network}
@@ -85,11 +87,11 @@ The neural network in this project is shown in \xfig{fig:neural_network}. It is 
   \item The velocity of the agent
 \end{enumerate}
 which are concatenated into a single vector.
-The output of the neural network is the two dimensional velocity vector of the agent. The neural network consisted of two hidden layers, with 6 and 4 neurons respectively, and the activation function used is the tanh function. The neural network is trained using a genetic algorithm over an episode of 120 steps to minimize the distance between the agent and the target.
+The output of the neural network is the two dimensional velocity vector of the agent. The neural network consisted of two hidden layers, each with 8 neurons, the activation function used is the tanh function. The neural network is trained using a genetic algorithm over an episode of 120 steps to minimize the distance between the agent and the target.
 
 \subsection{Genetic Algorithm}
 \subsubsection{Chromosome Design} The chromosome is a vector of real numbers representing the weights of the neural network. The chromosome is represented as a 1D array of real numbers, the weights of the neural network are flattened and concatenated into a single vector. The weights will be clipped to a upper and lower bound after mutation and crossover to prevent gradient explosion and vanishing.
-\subsubsection{Population Initialization} The population is initialized with Xavier initialization, the weights are sampled from a normal distribution with mean 0 and standard deviation $\sqrt{\frac{2}{n_{in} + n_{out}}}$, where $n_{in}$ and $n_{out}$ are the number of input and output neurons respectively.
+\subsubsection{Population Initialization} The population is initialized with Xavier initialization \cite{Xavier_pmlr-v9-glorot10a}, the weights are sampled from a normal distribution with mean 0 and standard deviation $\sqrt{\frac{2}{n_{in} + n_{out}}}$, where $n_{in}$ and $n_{out}$ are the number of input and output neurons respectively.
 \subsubsection{Selection} Tournament Selection with a tournament size of 5 is used, the best and second best chromosomes are selected as parents.
 \subsubsection{Crossover} One-point crossover is used with a probability of $\mu_c$, a random point is selected and the genes after the point are swapped between the two parents.
 \subsubsection{Mutation} Uniform mutation is used, each gene has a probability of $\mu_m$ to be mutated by a random value sampled from a normal distribution with mean 0 and standard deviation 0.1.
@@ -100,11 +102,11 @@ The fitness function consists of the following components:
   \item \textbf{Direction to Target:} The cosine similarity between the direction of the agent and the direction to the target.
   \item \textbf{Efficiency:} 
 \end{enumerate}
-\subsection{Inspiration from Reinforcement Learning}
+\subsection{Inspirations from Reinforcement Learning}
 \begin{enumerate}
-  \item \textbf{Curriculum Learning}
-  \item \textbf{Accumulated Reward}
-  \item \textbf{Discount Factor} A discount factor $\gamma$ is used to discount the future rewards, the reward at time step $t$ is multiplied by $\gamma^t$
+  \item \textbf{Curriculum Learning:} Curriculum learning is a training strategy in which the difficulty of the task is gradually increased during training. In this project, the speed of the target is gradually increased during the first 10\% of the generation, and then kept constant for the rest of the generation.
+  \item \textbf{Accumulated Reward:}
+  \item \textbf{Discount Factor:} A discount factor $\gamma$ is used to discount the future rewards, the reward at time step $t$ is multiplied by $\gamma^t$
   \begin{equation}
     R_t = \sum_{i=t}^{T} \gamma^{i-t} r_i
     \label{eq:discount}

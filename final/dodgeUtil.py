@@ -1,5 +1,5 @@
 import numpy as np
-FIELD_SIZE = 1
+FIELD_SIZE = 10
 PROXIMITY = 0.05
 CENTER = np.array([FIELD_SIZE, FIELD_SIZE]) / 2
 
@@ -18,20 +18,19 @@ def directionScore(target_pos, player_pos, player_vel):
     
     return dir_score
 
-def totalFitness(target_pos, target_vel, player_pos, player_vel):
+def totalFitness(target_pos, target_vel, player_pos, player_vel, dist_rank):
     # Combine multiple fitness components
-    dist_score = 1 / np.sum(np.abs(target_pos - player_pos))
+    dist_score = -np.linalg.norm(target_pos - player_pos)**2 
     efficiency_score = -np.linalg.norm(player_vel)
     dir_score = directionScore(target_pos, player_pos, player_vel)
     # touch_dist = int(np.linalg.norm(target_pos - player_pos) < PROXIMITY)
     
     # Adjust the weights based on importance
     total_score = sum([
-        4.0 * dist_score,
-        # 1.0 * center_score,
+        1.0 * dist_score,
+        1.0 * dist_rank,
         1.0 * efficiency_score,
-        5.0 * dir_score,
-        # 100 * touch_dist,
+        1.0 * dir_score,
     ])
     return total_score
 
@@ -44,7 +43,7 @@ def sigmoid_centered(x: np.ndarray) -> np.ndarray:
     return 2 / (1 + np.exp(-x)) - 1
 
 class PlayerNeuralNetwork:
-    default_architecture = (6, [6, 6], 2)
+    default_architecture = (6, [8, 8], 2)
     def __init__(self, input_size, hidden_sizes, output_size):
         # Initialize neural network layers with random weights and biases
         self.layers = []

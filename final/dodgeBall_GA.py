@@ -7,14 +7,14 @@ pygame.init()
 # 設定視窗大小和顏色
 WINDOW_WIDTH = 700
 WINDOW_HEIGHT = 700
-FIELD_SIZE = 1
-ZOOM = 600
+FIELD_SIZE = 10
+ZOOM = 60
 OFFSET = (WINDOW_WIDTH - FIELD_SIZE * ZOOM) // 2
 OFFSET_POS = np.ones(2) *  OFFSET
 PLAYER_RADIUS = 5
 BALL_RADIUS = 15
-BALL_SPEED = .025
-BALL_DRAG = 0.98
+BALL_SPEED = .15
+BALL_DRAG = 0.99
 
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Dodgeball Simulation GA")
@@ -35,6 +35,7 @@ pop_size = 100  # Population size
 episode_length = 120  # Length of each episode
 discount = 0.99  # Discount factor
 weight_bound = 2.0  # Bound for weights and biases
+warm_up = 0.2  # Fraction of generations to warm up
 
 ball_pos = np.random.uniform(0, FIELD_SIZE, 2)
 ball_vel = np.zeros(2)
@@ -48,7 +49,8 @@ font = pygame.freetype.SysFont('Consolas', 20)
 # Initialize population
 nn_population = [PlayerNeuralNetwork(*PlayerNeuralNetwork.default_architecture) for _ in range(pop_size)]
 shape_of_weights = nn_population[0].get_weights()
-print(*nn_population[0].layers, sep='\n')
+for layer in nn_population[0].layers:
+    print(layer[0].shape, layer[1].shape)
 print(shape_of_weights.shape)
 
 population = np.array([player.get_weights() for player in nn_population])
@@ -72,7 +74,7 @@ for gen in range(generations):
     agent_vel = np.zeros((pop_size, 2))
     # ball_pos = np.random.uniform(0, FIELD_SIZE, 2)
     _ang = np.random.uniform(0, 2*np.pi)
-    ball_vel = np.array([np.cos(_ang), np.sin(_ang)]) * BALL_SPEED
+    ball_vel = np.array([np.cos(_ang), np.sin(_ang)]) * BALL_SPEED * (gen/generations if gen < generations*warm_up else 1)
     # target_positions = ball_pos
     # prev_rewards = np.copy(accumulated_rewards)
     accumulated_rewards = np.zeros(pop_size)
@@ -80,23 +82,25 @@ for gen in range(generations):
     # Run episode
     max_idx = 0
     for step in range(episode_length):
+        
+        # 碰撞邊界反彈
+        if ball_pos[0] <= 0 or ball_pos[0] >= FIELD_SIZE:
+            ball_vel[0] *= -1.2
+        if ball_pos[1] <= 0 or ball_pos[1] >= FIELD_SIZE:
+            ball_vel[1] *= -1.2
         # 更新球位置
         ball_pos += ball_vel
         ball_vel *= BALL_DRAG
-        # 碰撞邊界反彈
-        if ball_pos[0] <= 0 or ball_pos[0] >= FIELD_SIZE:
-            ball_vel[0] *= -1
-        if ball_pos[1] <= 0 or ball_pos[1] >= FIELD_SIZE:
-            ball_vel[1] *= -1
         
+        dist_rank = (-np.linalg.norm(agent_positions - ball_pos, axis=1)).argsort().argsort()
         for i in range(pop_size):
-            inputs = np.array([*agent_positions[i]/FIELD_SIZE, *ball_pos/FIELD_SIZE, *agent_vel[i]])
+            inputs = np.array([*agent_positions[i]/FIELD_SIZE, *ball_pos/FIELD_SIZE, *ball_vel])
             # if i == max_idx:
             #     print(inputs, end='\r')
             agent_vel[i] = nn_population[i].forward(inputs)
             agent_positions[i] += agent_vel[i]
             # agent_positions[i] %= FIELD_SIZE
-            fitness = totalFitness(ball_pos, ball_vel, agent_positions[i], agent_vel[i])
+            fitness = totalFitness(ball_pos, ball_vel, agent_positions[i], agent_vel[i], dist_rank[i] / pop_size)
             # biased towards the end of the episode
             accumulated_rewards[i] += fitness * discount ** (episode_length - step)
         max_idx = np.argmax(accumulated_rewards)
@@ -109,9 +113,11 @@ for gen in range(generations):
             for i, (player, vel) in enumerate(zip(agent_positions, agent_vel)):
                 if i == max_idx:
                     pygame.draw.circle(WINDOW, GREEN, player * ZOOM + OFFSET_POS, PLAYER_RADIUS+5)
+                elif i == dist_rank.argmax():
+                    pygame.draw.circle(WINDOW, RED,  player * ZOOM + OFFSET_POS, PLAYER_RADIUS+5)
                 else:
                     pygame.draw.circle(WINDOW, BLUE,  player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
-                pygame.draw.line(WINDOW, WHITE, player * ZOOM + OFFSET_POS, (player + vel * 3) * ZOOM + OFFSET_POS, 1)
+                pygame.draw.line(WINDOW, WHITE, player * ZOOM + OFFSET_POS, player * ZOOM + vel * BALL_RADIUS + OFFSET_POS, 1)
                 # textSur, rect = font.render(f"[{i:2d}]", GREEN)
                 # WINDOW.blit(textSur, player * ZOOM + OFFSET_POS)
                 
