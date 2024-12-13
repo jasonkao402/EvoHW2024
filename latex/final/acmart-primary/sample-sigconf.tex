@@ -44,15 +44,15 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-Artificial neural networks have been widely used in various fields, such as image recognition, natural language processing, and game AI. Gradient-based optimization algorithms, such as stochastic gradient descent, are commonly used to train neural networks. In this project, we propose an unusual approach of using genetic algorithms to optimize the weights of neural networks. We will implement a genetic algorithm to train a neural network to perform on a task of pursuing a target in a 2D environment. We also got inspiration from several techniques from the field of reinforcement learning, such as cirrcrium learning, accumulated reward and discount factor. The goal of this project is to demonstrate that genetic algorithms can be used to train neural networks. The results show that the neural network trained using genetic algorithms can also achieve satisfactory performance on the task of pursuing a target in a 2D environment. 
+Artificial neural networks have been widely used in various fields, such as image recognition, natural language processing, and game AI. Gradient-based optimization algorithms, such as stochastic gradient descent, are commonly used to train neural networks. In this project, we propose an unusual approach of using genetic algorithms to optimize the weights of neural networks. We will implement a genetic algorithm to train a neural network to perform on a task of pursuing a target in a 2D environment. We also got inspiration from several techniques from the field of reinforcement learning, such as curriculum learning, accumulated reward and discount factor. The goal of this project is to demonstrate that genetic algorithms can be used to train neural networks. The results show that the neural network trained using genetic algorithms can also achieve satisfactory performance on the task of pursuing a target in a 2D environment. 
 \end{abstract}
 
 \maketitle
 \end{CJK}
 
 \section{Introduction}
-When it comes to training neural networks, the most common approach is to use gradient-based optimization algorithms, such as stochastic gradient descent (SGD) and its variants. Since this task is a non-convex optimization problem, genetic algorithms, which are a type of evolutionary algorithm, can be used as an alternative optimization algorithm. Genetic algorithms are inspired by the process of natural evolution and survival of the fittest, finging good solutions to optimization problems in a wide range of domains.
-In artifical neural network research, genetic algorithms have been used to optimize the \textbf{architecture} of neural networks \cite{wu2021trainingNI} and the \textbf{weights} of neural networks \cite{NN_GA_DavidJ_10.5555/1623755.1623876}, or both simultaneously \cite{stanley2002evolving,NDE_Karl_10.1145/3067695.3075967}. Unlike gradient-based optimization algorithms, genetic algorithms do not require the gradient of the objective function, and rely on the population-based exploration strategy to traverse the search space, making them suitable for optimizing non-differentiable and non-convex functions. 
+When it comes to training neural networks, the most common approach is to use gradient-based optimization algorithms, such as stochastic gradient descent (SGD) and its variants. Since this task is a non-convex optimization problem, genetic algorithms, which are a type of evolutionary algorithm, can be used as an alternative optimization algorithm. Genetic algorithms are inspired by the process of natural evolution and survival of the fittest, finding good solutions to optimization problems in a wide range of domains.
+In artificial neural network research, genetic algorithms have been used to optimize the \textbf{architecture} of neural networks \cite{wu2021trainingNI} and the \textbf{weights} of neural networks \cite{NN_GA_DavidJ_10.5555/1623755.1623876}, or both simultaneously \cite{stanley2002evolving,NDE_Karl_10.1145/3067695.3075967}. Unlike gradient-based optimization algorithms, genetic algorithms do not require the gradient of the objective function, and rely on the population-based exploration strategy to traverse the search space, making them suitable for optimizing non-differentiable and non-convex functions. 
 
 \section{Implementation Details}
 Real-time visual representation will be implemented in a 2D environment using a Python package called ``pygame'', allowing us to observe the evolving strategies in action. The visual rendering is a toggleable feature, turing it off will speed up the training process. 
@@ -107,7 +107,7 @@ The fitness function consists of the following components:
   \item \textbf{Direction to Target:} The cosine similarity between the direction of the agent and the direction to the target. Only values greater than 0.8 are considered, it serves as a bonus reward for agents that are moving towards the target, so we chose to not normalize it.
 \end{enumerate}
 The fitness function is the sum of the above components, and it is being calculated and accumulated for each time step during the episode.
-The accumulated reward is the actuall fitness function used to evaluate the performance and stability of the agents.
+The accumulated reward is the fitness function used to evaluate the performance and stability of the agents.
 \subsection{Inspirations from Reinforcement Learning}
 The environment in this task is highly dynamic, which means the genetic algorithm needs to be able to adapt to the changes in the environment as time progresses. Using the accumulated reward as the fitness function, long-term rewards are encouraged, and the agents are expected to learn to pursue the target effectively.
 An episode in this project consists of 100 time steps, the agents are evaluated based on their performance in each episode. The following techniques from the field of reinforcement learning are used to improve the performance of the agents:
@@ -120,7 +120,7 @@ The accumulated reward $G_t$ is calculated as follows:
   G_t = R_t + \gamma R_{t+1} + \gamma^2 R_{t+2} + \ldots + \gamma^{T-t} R_T = \sum_{i=t}^{T} \gamma^{i-t} r_i
   \label{eq:discount}
 \end{equation}
-wherer $R_t$ is the reward at time step $t$, $T$ is the total number of time steps in the episode, and $\gamma$ is the discount factor.
+where $R_t$ is the reward at time step $t$, $T$ is the total number of time steps in the episode, and $\gamma$ is the discount factor.
 
 \section{Experiment Results}
 \subsection{Distance to Target}
@@ -131,8 +131,10 @@ wherer $R_t$ is the reward at time step $t$, $T$ is the total number of time ste
   \Description{The performance of the agents over the generations.}
   \label{fig:plot_all}
 \end{figure}
-as shown in \xfig{fig:plot_all}, the agents are able to learn to pursue the target effectively, the distance to the target decreases over the generations. During the warm-up period in the first 20\% of the generation, while we did not see the best fitness getting substa
+as shown in \xfig{fig:plot_all}, the agents are able to learn to pursue the target effectively, the distance to the target decreases over the generations. During the warm-up period in the first 20\% of the generation, while we did not see the best fitness getting substantially better, the average fitness of the population increased, indicating that the agents as a whole are learning to pursue the target more effectively. 
+
 \subsection{Fitness Function Analysis}
+In this part, we will analyze the performance of the agents using each component of the fitness function separately. The following figures show the performance of the agents using only the distance to target, the rank of distance, and the direction to target as the fitness function, respectively.
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.95\linewidth]{imgs/result_Run_cx0.85_mut0.25_2024_1214_0633_dist_only.pdf}
@@ -156,7 +158,10 @@ as shown in \xfig{fig:plot_all}, the agents are able to learn to pursue the targ
   \Description{Using only the direction to target as the fitness function.}
   \label{fig:plot_dir}
 \end{figure}
+As shown in \xfig{fig:plot_dist}, \xfig{fig:plot_rank}, and \xfig{fig:plot_dir}, the distance to target and the rank of distance are doing most of the work in improving the performance of the agents, while the direction to target seems struggling to perform due to lack of positional information.
+
 \section{Conclusion}
+In this project, we have demonstrated that genetic algorithms can be used to optimize the weights of neural networks. We have implemented a genetic algorithm to train a neural network to perform on a task of pursuing a target in a 2D environment. We have also used several techniques from the field of reinforcement learning, such as curriculum learning, accumulated reward, and discount factor, to improve the performance of the agents. The results show that the neural network trained using genetic algorithms can achieve satisfactory performance on the task of pursuing a target in a 2D environment.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{sample-base}
