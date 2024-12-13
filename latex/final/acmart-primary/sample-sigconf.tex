@@ -1,0 +1,119 @@
+\documentclass[sigconf]{acmart}
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+\usepackage{CJKutf8}
+
+\setcopyright{acmlicensed}
+\copyrightyear{2024}
+% \acmYear{2024}
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[EC 2024]{}{December, 2024}{Hsinchu, Taiwan}
+\acmISBN{}
+\acmDOI{}
+\input{macros.tex}
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title{Neural Network Optimization using Genetic Algorithms}
+
+\begin{CJK}{UTF8}{bkai}
+  \author{高聖傑}
+  \email{Kao, Sheng-Jie}
+  \email{313552011}
+  \email{rabbitkao402@gmail.com}
+\affiliation{%
+  \institution{National Yang Ming Chiao Tung University}
+  \city{Hsinchu}
+  \country{Taiwan}
+}
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{Kao et al.}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+  % A clear and well-documented \LaTeX\ document is presented as an
+  % article formatted for publication by ACM in a conference proceedings
+  % or journal publication. Based on the ``acmart'' document class, this
+  % article presents and explains many of the common variations, as well
+  % as many of the formatting elements an author may use in the
+  % preparation of the documentation of their work.
+  Artificial neural networks have been widely used in various fields, such as image recognition, natural language processing, and game AI. However, the performance of neural networks is highly dependent on the choice of hyperparameters and the optimization algorithm. In this project, we propose an unusual approach of using genetic algorithms to optimize the weights of neural networks. We will implement a genetic algorithm to train a neural network to perform on a task of pursuing a target in a 2D environment. We also got inspiration from several techniques from the field of reinforcement learning, such as cirrcrium learning, accumulated reward and discount factor. The goal of this project is to demonstrate that genetic algorithms can be used to train neural networks.
+\end{abstract}
+
+\maketitle
+\end{CJK}
+
+\section{Introduction}
+
+\section{Implementation Details}
+Real-time visual representation will be implemented in a 2D environment using a Python package called ``pygame'', allowing us to observe the evolving strategies in action. 
+\subsection{Environment}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{demo01.png}
+  \caption{The performance of the neural network during training.}
+  \Description{The performance of the neural network during training.}
+  \label{fig:ball_demo}
+\end{figure}
+As shown in \xfig{fig:ball_demo}, the simulation will include the following visible components:
+\begin{itemize}
+  \item \textbf{Game Arena:} A 2D field with defined boundaries, defined by a rectangle outlined in green.
+  \item \textbf{Pursuing Agent:} A simple agent, colored in blue, capable of moving in the 2D environment with the objective of pursuing a target.
+  \item \textbf{Ball Physics:} A simple ball, colored in red, with simulated physics, serving as the target for the pursuing agent.
+\end{itemize}
+
+\subsection{Neural Network}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{NeuralNetwork.png}
+  \caption{The structure of the neural network.}
+  \Description{The structure of the neural network.}
+  \label{fig:neural_network}
+\end{figure}
+The neural network in this project is shown in \xfig{fig:neural_network}. It is a simple fully connected feedforward neural network with two hidden layers. The input of the neural network are the following:
+\begin{enumerate}
+  \item The position of the agent
+  \item The position of the target
+  \item The velocity of the agent
+\end{enumerate}
+which are concatenated into a single vector.
+The output of the neural network is the two dimensional velocity vector of the agent. The neural network is trained using a genetic algorithm to minimize the distance between the agent and the target. 
+
+\subsection{Genetic Algorithm}
+\subsubsection{Chromosome Design}
+\subsubsection{Selection}
+\subsubsection{Crossover}
+\subsubsection{Mutation}
+\subsubsection{Fitness Function}
+\subsection{Inspiration from Reinforcement Learning}
+\begin{enumerate}
+  \item \textbf{Curriculum Learning} 
+  \item \textbf{Accumulated Reward}
+  \item \textbf{Discount Factor}
+\end{enumerate}
+
+
+
+\section{Results}
+
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample-base}
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-sigconf.tex'.

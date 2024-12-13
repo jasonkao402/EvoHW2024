@@ -54,7 +54,7 @@ print(shape_of_weights.shape)
 population = np.array([player.get_weights() for player in nn_population])
 agent_position_ = np.random.uniform(0, FIELD_SIZE, 2)  # Single random starting position for all agents
 accumulated_rewards = np.zeros(pop_size)
-
+draw = True
 for gen in range(generations):
     for event in pygame.event.get():
         # force quit
@@ -62,7 +62,9 @@ for gen in range(generations):
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             ball_pos = (np.array(pygame.mouse.get_pos()) - OFFSET_POS) / ZOOM
-            
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                draw = not draw
     if not running:
         break
     # Randomize start and target positions
@@ -99,32 +101,33 @@ for gen in range(generations):
             accumulated_rewards[i] += fitness * discount ** (episode_length - step)
         max_idx = np.argmax(accumulated_rewards)
         
-        # 清空畫面
-        WINDOW.fill(GRAY)
-        
-        # 繪製躲球方（藍色）
-        for i, (player, vel) in enumerate(zip(agent_positions, agent_vel)):
-            if i == max_idx:
-                pygame.draw.circle(WINDOW, GREEN, player * ZOOM + OFFSET_POS, PLAYER_RADIUS+5)
-            else:
-                pygame.draw.circle(WINDOW, BLUE,  player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
-            pygame.draw.line(WINDOW, WHITE, player * ZOOM + OFFSET_POS, (player + vel * 3) * ZOOM + OFFSET_POS, 1)
-            # textSur, rect = font.render(f"[{i:2d}]", GREEN)
-            # WINDOW.blit(textSur, player * ZOOM + OFFSET_POS)
+        if draw:
+            # 清空畫面
+            WINDOW.fill(GRAY)
             
-        # 繪製球（黑色）
-        pygame.draw.circle(WINDOW, RED, ball_pos * ZOOM + OFFSET_POS, BALL_RADIUS)
-        
-        textSur, rect = font.render(f"Frame: {frameCount}, Episode: {frameCount//episode_length}", GREEN)
-        WINDOW.blit(textSur, OFFSET_POS/2)
-        # 繪製場地邊界
-        pygame.draw.rect(WINDOW, GREEN, (OFFSET, OFFSET, FIELD_SIZE * ZOOM, FIELD_SIZE * ZOOM), 3)
+            # 繪製躲球方（藍色）
+            for i, (player, vel) in enumerate(zip(agent_positions, agent_vel)):
+                if i == max_idx:
+                    pygame.draw.circle(WINDOW, GREEN, player * ZOOM + OFFSET_POS, PLAYER_RADIUS+5)
+                else:
+                    pygame.draw.circle(WINDOW, BLUE,  player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
+                pygame.draw.line(WINDOW, WHITE, player * ZOOM + OFFSET_POS, (player + vel * 3) * ZOOM + OFFSET_POS, 1)
+                # textSur, rect = font.render(f"[{i:2d}]", GREEN)
+                # WINDOW.blit(textSur, player * ZOOM + OFFSET_POS)
+                
+            # 繪製球（黑色）
+            pygame.draw.circle(WINDOW, RED, ball_pos * ZOOM + OFFSET_POS, BALL_RADIUS)
+            
+            textSur, rect = font.render(f"Frame: {frameCount}, Episode: {frameCount//episode_length}", GREEN)
+            WINDOW.blit(textSur, OFFSET_POS/2)
+            # 繪製場地邊界
+            pygame.draw.rect(WINDOW, GREEN, (OFFSET, OFFSET, FIELD_SIZE * ZOOM, FIELD_SIZE * ZOOM), 3)
 
-        # 更新顯示
-        pygame.display.flip()
-        
-        # 控制更新速度
-        clock.tick(60)
+            # 更新顯示
+            pygame.display.flip()
+            
+            # 控制更新速度
+            clock.tick(60)
         frameCount += 1
         
     # Genetic operations
