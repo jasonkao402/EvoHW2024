@@ -54,7 +54,7 @@
 
 \section*{Question 1}
 Given two schemata \( S_1 = \text{*****1***10*****} \) and \( S_2 = \text{********10*11***} \), answer the following questions:
-\subsection*{1.a Order and defining length of \( S_1 \) and \( S_2 \).}
+\subsection*{1.a order and defining length of \( S_1 \) and \( S_2 \).}
 Length of both schemata is \( L = 16 \).
 \begin{itemize}
     \item Order \( o(S_1) = 3 \).
@@ -63,14 +63,14 @@ Length of both schemata is \( L = 16 \).
     \item Defining length \( \delta(S_2) = 13 - 9 = 4 \).
 \end{itemize}
 
-\subsection*{1.b Probability of One-Point Crossover Breaking \( S_1 \)}
+\subsection*{1.b Probability of one-point crossover breaking \( S_1 \)}
 To break \( S_1 \), a crossover point must occur within \( \delta(S_1) = 5 \).
 For a one-point crossover operator with rate \( p_c \), the probability of breaking \( S_1 \) is:
 \[
 P_{\text{break(S1)}} = p_c \cdot \frac{\delta(S_1)}{L - 1} = p_c \cdot \frac{5}{15}.
 \]
 
-\subsection*{1.c Probability of Mutation Breaking \( S_1 \)}
+\subsection*{1.c Probability of mutation breaking \( S_1 \)}
 Mutation breaks \( S_1 \) if any of its fixed positions mutates.
 Assuming mutation is applied gene by gene, for mutation rate \( p_m \), the probability that a specific fixed position mutates is \( p_m \).
 For \( o(S_1) = 3 \) fixed positions, the probability of breaking \( S_1 \) is:
@@ -85,12 +85,12 @@ P_{\text{survive(S1)}} = \left( 1 - p_c \cdot \frac{5}{15} \right) \cdot (1 - p_
 \]
 
 \subsection*{1.e Answer for \( S_2 \)}
-Probability of One-Point Crossover Breaking \( S_2 \):
+Probability of one-point crossover breaking \( S_2 \):
 \[
 P_{\text{break(S2)}} = p_c \cdot \frac{\delta(S_2)}{L - 1} = p_c \cdot \frac{4}{15}.
 \]
 
-Probability of Mutation Breaking \( S_2 \):
+Probability of mutation breaking \( S_2 \):
 \[
 P_{\text{break(S2)}} = 1 - (1 - p_m)^{o(S_2)} = 1 - (1 - p_m)^4.
 \]
@@ -100,7 +100,7 @@ Probability of surviving both crossover and mutation for \( S_2 \):
 P_{\text{survive(S2)}} = \left( 1 - p_c \cdot \frac{4}{15} \right) \cdot (1 - p_m)^4.
 \]
 
-\subsection*{1.f Are \( S_1 \) or \( S_2 \) Building Blocks?}
+\subsection*{1.f Is it appropriate to call one of these two schemata a building block?}
 A building block is a short, low-order, high-fitness schema that contributes positively to the overall fitness of individuals when combined with other building blocks.
 While both \( S_1 \) and \( S_2 \) are short and low-order, their contribution to overall fitness is unknown.
 Thus, \( S_1 \) and \( S_2 \) could be building blocks if they exhibit high fitness or are part of a broader solution.
@@ -126,5 +126,61 @@ With a population of 1500, the approximate number of individuals attracted to ea
 \]
 
 \section*{Question 3}
+\subsection*{When and Why Mutation Strength Should Be Increased}
+\begin{itemize}
+    \item \textbf{Exploration in the Early Stages}:
+    \begin{enumerate}
+        \item \textbf{Reason}: At the start, the search space is largely unexplored, and diversity is crucial to avoid premature convergence. A higher mutation strength allows the algorithm to explore broadly and discover promising regions of the search space.
+        \item \textbf{Example}: In high-dimensional or rugged fitness landscapes, increasing mutation strength can help escape local optima and reach globally competitive solutions.
+    \end{enumerate}
+    \item \textbf{Stagnation or Premature Convergence}:
+    \begin{enumerate}
+        \item \textbf{Reason}: If the population becomes homogeneous or fitness improvements stagnate, increasing mutation strength introduces variability and enables exploration of unexplored or overlooked areas.
+        \item \textbf{Example}: Evolutionary strategies encountering "flat" regions (plateaus) in the fitness landscape benefit from increased step sizes (\( \sigma \)) to move toward areas with higher gradients.
+    \end{enumerate}
+    \item \textbf{Dynamic or Non-stationary Environments}:
+    \begin{enumerate}
+        \item \textbf{Reason}: In dynamic problems, the optimal solution may shift over time. Increased mutation strength allows the algorithm to adapt more quickly to changes.
+        \item \textbf{Example}: Optimization in a continuously changing environment, like tracking a moving target.
+    \end{enumerate}
+    \item \textbf{Highly Multimodal Problems}:
+    \begin{enumerate}
+        \item \textbf{Reason}: Problems with many local optima require larger mutations to jump between basins of attraction and avoid getting stuck.
+        \item \textbf{Example}: Solving deceptive optimization problems or tasks with rugged fitness landscapes.
+    \end{enumerate}
+\end{itemize}
 
+\subsection*{When and Why Mutation Strength Should Be Decreased}
+\begin{itemize}
+    \item \textbf{Exploitation in the Later Stages}:
+    \begin{enumerate}
+        \item \textbf{Reason}: As the population converges toward an optimum, fine-tuning is needed to refine solutions. A lower mutation strength reduces the risk of overshooting and enables gradual improvements.
+        \item \textbf{Example}: Decreasing \( \sigma \) in evolution strategies near the global optimum to perform a more localized search.
+    \end{enumerate}
+    \item \textbf{High Selection Pressure}:
+    \begin{enumerate}
+        \item \textbf{Reason}: When the selection pressure is high (e.g., only the fittest individuals survive), excessive mutation can disrupt well-performing solutions. Lower mutation strength helps maintain the quality of solutions.
+        \item \textbf{Example}: Genetic algorithms with strong elitism.
+    \end{enumerate}
+    \item \textbf{When the Search Space Is Small or Simple}:
+    \begin{enumerate}
+        \item \textbf{Reason}: In small or low-dimensional search spaces, large mutations are more likely to result in unfit solutions. Decreasing mutation strength ensures the algorithm stays within promising regions.
+        \item \textbf{Example}: Optimizing parameters with narrow ranges.
+    \end{enumerate}
+    \item \textbf{Near Optimal Solutions}:
+    \begin{enumerate}
+        \item \textbf{Reason}: Close to the optimum, large mutations may cause solutions to oscillate or degrade. Reducing mutation strength ensures a stable, precise search.
+        \item \textbf{Example}: Fine-tuning hyperparameters of a machine learning model where performance is sensitive to small changes.
+    \end{enumerate}
+\end{itemize}
+
+\subsection*{Balancing Mutation Strength Dynamically}
+A dynamic adjustment of mutation strength throughout the evolutionary process is often the most effective strategy. Common approaches include:
+\begin{itemize}
+    \item \textbf{Adaptive Mutation}: Adjust mutation strength based on feedback, such as improvement rates in fitness.
+    \item \textbf{Self-Adaptive Mutation}:Encode mutation strength as part of the individual's genome and let evolution determine optimal values.
+    \item \textbf{Annealing Strategies}:Gradually decrease mutation strength over generations, balancing exploration early and exploitation later.
+\end{itemize}
+
+Dynamic or adaptive mutation strategies can effectively combine these principles, making the algorithm robust to varying problem characteristics and stages of optimization.
 \end{document}
