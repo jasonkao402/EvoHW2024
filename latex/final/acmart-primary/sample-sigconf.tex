@@ -158,7 +158,7 @@ In this part, we will analyze the performance of the agents using each component
   \Description{Using only the direction to target as the fitness function.}
   \label{fig:plot_dir}
 \end{figure}
-As shown in \xfig{fig:plot_dist}, \xfig{fig:plot_rank}, and \xfig{fig:plot_dir}, the distance to target and the rank of distance are doing most of the work in improving the performance of the agents, while the direction to target seems struggling to perform due to lack of positional information.
+As shown in \xfig{fig:plot_dist}, \xfig{fig:plot_rank}, and \xfig{fig:plot_dir}, the distance to target and the rank of distance are doing most of the work in improving the performance of the agents, while the direction to target seems struggling to perform due to lack of positional information. However, the direction to target is still able to provide a bonus reward for agents that are moving towards the target, which can help the agents to learn to pursue the target more effectively.
 
 \section{Conclusion}
 In this project, we have demonstrated that genetic algorithms can be used to optimize the weights of neural networks. We have implemented a genetic algorithm to train a neural network to perform on a task of pursuing a target in a 2D environment. We have also used several techniques from the field of reinforcement learning, such as curriculum learning, accumulated reward, and discount factor, to improve the performance of the agents. The results show that the neural network trained using genetic algorithms can achieve satisfactory performance on the task of pursuing a target in a 2D environment.
