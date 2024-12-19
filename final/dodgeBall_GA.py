@@ -46,7 +46,7 @@ ball_vel = np.zeros(2)
 
 # 遊戲主迴圈
 running = True
-draw = False
+draw = True
 clock = pygame.time.Clock()
 font = pygame.freetype.SysFont('Consolas', 20)
 
@@ -123,7 +123,7 @@ for _ in range(REPEAT):
                 WINDOW.fill(GRAY)
                 
                 # 繪製躲球方（藍色）
-                for i, (player, vel) in enumerate(zip(agent_positions, agent_vel)):
+                for i, (player, vel, drank) in enumerate(zip(agent_positions, agent_vel, dist_rank)):
                     if i == max_idx:
                         pygame.draw.circle(WINDOW, GREEN, player * ZOOM + OFFSET_POS, PLAYER_RADIUS+5)
                     elif i == dist_rank.argmax():
@@ -131,8 +131,11 @@ for _ in range(REPEAT):
                     else:
                         pygame.draw.circle(WINDOW, BLUE,  player * ZOOM + OFFSET_POS, PLAYER_RADIUS)
                     pygame.draw.line(WINDOW, WHITE, player * ZOOM + OFFSET_POS, player * ZOOM + vel * 25 + OFFSET_POS, 1)
-                    # textSur, rect = font.render(f"[{i:2d}]", GREEN)
-                    # WINDOW.blit(textSur, player * ZOOM + OFFSET_POS)
+                    # if drank > pop_size-6:
+                    #     midpoints = (player*.8 + ball_pos*.2)
+                    #     pygame.draw.line(WINDOW, GREEN, player * ZOOM + OFFSET_POS, ball_pos * ZOOM + OFFSET_POS, 1)
+                    #     textSur, rect = font.render(f"{pop_size - drank}", GREEN)
+                    #     WINDOW.blit(textSur, midpoints * ZOOM + OFFSET_POS)
                     
                 # 繪製球（黑色）
                 pygame.draw.circle(WINDOW, RED, ball_pos * ZOOM + OFFSET_POS, BALL_RADIUS)
@@ -146,7 +149,7 @@ for _ in range(REPEAT):
                 pygame.display.flip()
                 
                 # 控制更新速度
-                clock.tick(60)
+                clock.tick(30)
             frameCount += 1
             
         # Genetic operations

@@ -1,0 +1,136 @@
+% CVPR 2022 Paper Template
+% !TEX root = PaperForReview.tex
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{titling}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{CJKutf8}
+\usepackage{geometry}
+\usepackage{float}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+%  \setlength{\headheight}{15.0pt}
+\addtolength{\topmargin}{-3.0pt}
+
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+% \usepackage{fancyhdr}
+% \fancypagestyle{plain}{%  the preset of fancyhdr 
+%     \fancyhf{} % clear all header and footer fields
+%     \fancyhead[L]{Computer Vision Homework 1 Report}
+%     \fancyhead[R]{\today}
+% }
+\makeatletter
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+\input{macros.tex}
+\newcommand{\xAns}{\vskip 2mm\textbf{Answer:} }
+\begin{document}
+\begin{CJK}{UTF8}{bkai}
+    %%%%%%%%% TITLE
+    \title{Evolutionary Computation Final Examination}
+    
+    \author{
+        Leader\\
+        高聖傑\\
+        313552011\\
+        rabbitkao402@gmail.com
+    }
+
+    \maketitle
+\end{CJK}
+
+\section*{Question 1}
+Given two schemata \( S_1 = *****1***10***** \) and \( S_2 = ********10*11*** \), answer the following questions:
+\subsection*{1.a}
+- Order \( o(S_1) = 3 \) (fixed positions: 6, 10, 11).
+- Defining length \( \delta(S_1) = 11 - 6 = 5 \).
+- Order \( o(S_2) = 4 \) (fixed positions: 9, 10, 12, 13).
+- Defining length \( \delta(S_2) = 13 - 9 = 4 \).
+
+\subsection*{1.b}
+Probability of One-Point Crossover Breaking \( S_1 \)
+To break \( S_1 \), a crossover point must occur within \( \delta(S_1) = 5 \).
+For a one-point crossover operator with rate \( p_c \), the probability of breaking \( S_1 \) is:
+\[
+P_{\text{break(S1)}} = p_c \cdot \frac{\delta(S_1)}{L - 1} = p_c \cdot \frac{5}{15}.
+\]
+
+\subsection*{1.c}
+Probability of Mutation Breaking \( S_1 \)
+Mutation breaks \( S_1 \) if any of its fixed positions mutates.
+Assuming mutation is applied gene by gene, for mutation rate \( p_m \), the probability that a specific fixed position mutates is \( p_m \).
+For \( o(S_1) = 3 \) fixed positions, the probability of breaking \( S_1 \) is:
+  \[
+  P_{\text{break(S1)}} = 1 - (1 - p_m)^{o(S_1)} = 1 - (1 - p_m)^3.
+  \]
+
+\subsection*{1.d}
+### **(d) Probability that \( S_1 \) Survives Crossover and Mutation**
+The survival probability is the complement of the combined probabilities that crossover or mutation break \( S_1 \).
+
+- Crossover survival probability:
+    \[
+    P_{\text{survive, crossover}} = 1 - P_{\text{break(S1, crossover)}} = 1 - p_c \cdot \frac{5}{14}.
+    \]
+
+- Mutation survival probability:
+    \[
+    P_{\text{survive, mutation}} = 1 - P_{\text{break(S1, mutation)}} = (1 - p_m)^3.
+    \]
+
+- Combined survival probability (assuming independence):
+    \[
+    P_{\text{survive(S1)}} = P_{\text{survive, crossover}} \cdot P_{\text{survive, mutation}}.
+    \]
+    Substituting:
+    \[
+    P_{\text{survive(S1)}} = \left( 1 - p_c \cdot \frac{5}{14} \right) \cdot (1 - p_m)^3.
+    \]
+
+---
+
+### **(e) Answer for \( S_2 \)**
+Repeat the calculations for \( S_2 = ********10*11*** \), with \( o(S_2) = 4 \) and \( \delta(S_2) = 4 \):
+
+- **Probability of crossover breaking \( S_2 \):**
+    \[
+    P_{\text{break(S2, crossover)}} = p_c \cdot \frac{\delta(S_2)}{L - 1} = p_c \cdot \frac{4}{14}.
+    \]
+
+- **Probability of mutation breaking \( S_2 \):**
+    \[
+    P_{\text{break(S2, mutation)}} = 1 - (1 - p_m)^4.
+    \]
+
+- **Probability of \( S_2 \) surviving both crossover and mutation:**
+    \[
+    P_{\text{survive(S2)}} = \left( 1 - p_c \cdot \frac{4}{14} \right) \cdot (1 - p_m)^4.
+    \]
+
+---
+
+### **(f) Are \( S_1 \) or \( S_2 \) Building Blocks?**
+A **building block** is a short, low-order, high-fitness schema that contributes positively to the overall fitness of individuals when combined with other building blocks.
+
+- \( S_1 \) and \( S_2 \) have relatively low orders (\( o(S_1) = 3 \), \( o(S_2) = 4 \)) and short defining lengths (\( \delta(S_1) = 5 \), \( \delta(S_2) = 4 \)), which suggests they can be building blocks.
+
+- However, whether they qualify as building blocks depends on their contribution to fitness:
+    - If \( S_1 \) or \( S_2 \) corresponds to partial solutions that lead to higher fitness when combined, they are building blocks.
+    - If they do not contribute meaningfully to fitness, they are not building blocks.
+
+Thus, \( S_1 \) and \( S_2 \) **might** be building blocks if they exhibit high fitness or are part of a broader solution.
+
+\end{document}
