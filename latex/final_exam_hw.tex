@@ -53,23 +53,24 @@
 \end{CJK}
 
 \section*{Question 1}
-Given two schemata \( S_1 = *****1***10***** \) and \( S_2 = ********10*11*** \), answer the following questions:
-\subsection*{1.a}
-- Order \( o(S_1) = 3 \) (fixed positions: 6, 10, 11).
-- Defining length \( \delta(S_1) = 11 - 6 = 5 \).
-- Order \( o(S_2) = 4 \) (fixed positions: 9, 10, 12, 13).
-- Defining length \( \delta(S_2) = 13 - 9 = 4 \).
+Given two schemata \( S_1 = \text{*****1***10*****} \) and \( S_2 = \text{********10*11***} \), answer the following questions:
+\subsection*{1.a Order and defining length of \( S_1 \) and \( S_2 \).}
+Length of both schemata is \( L = 16 \).
+\begin{itemize}
+    \item Order \( o(S_1) = 3 \).
+    \item Order \( o(S_2) = 4 \).
+    \item Defining length \( \delta(S_1) = 11 - 6 = 5 \).
+    \item Defining length \( \delta(S_2) = 13 - 9 = 4 \).
+\end{itemize}
 
-\subsection*{1.b}
-Probability of One-Point Crossover Breaking \( S_1 \)
+\subsection*{1.b Probability of One-Point Crossover Breaking \( S_1 \)}
 To break \( S_1 \), a crossover point must occur within \( \delta(S_1) = 5 \).
 For a one-point crossover operator with rate \( p_c \), the probability of breaking \( S_1 \) is:
 \[
 P_{\text{break(S1)}} = p_c \cdot \frac{\delta(S_1)}{L - 1} = p_c \cdot \frac{5}{15}.
 \]
 
-\subsection*{1.c}
-Probability of Mutation Breaking \( S_1 \)
+\subsection*{1.c Probability of Mutation Breaking \( S_1 \)}
 Mutation breaks \( S_1 \) if any of its fixed positions mutates.
 Assuming mutation is applied gene by gene, for mutation rate \( p_m \), the probability that a specific fixed position mutates is \( p_m \).
 For \( o(S_1) = 3 \) fixed positions, the probability of breaking \( S_1 \) is:
@@ -77,60 +78,53 @@ For \( o(S_1) = 3 \) fixed positions, the probability of breaking \( S_1 \) is:
   P_{\text{break(S1)}} = 1 - (1 - p_m)^{o(S_1)} = 1 - (1 - p_m)^3.
   \]
 
-\subsection*{1.d}
-### **(d) Probability that \( S_1 \) Survives Crossover and Mutation**
-The survival probability is the complement of the combined probabilities that crossover or mutation break \( S_1 \).
+\subsection*{1.d Probability of surviving both crossover and mutation for \( S_1 \)}
+The probability of \( S_1 \) surviving both crossover and mutation is:
+\[
+P_{\text{survive(S1)}} = \left( 1 - p_c \cdot \frac{5}{15} \right) \cdot (1 - p_m)^3.
+\]
 
-- Crossover survival probability:
-    \[
-    P_{\text{survive, crossover}} = 1 - P_{\text{break(S1, crossover)}} = 1 - p_c \cdot \frac{5}{14}.
-    \]
+\subsection*{1.e Answer for \( S_2 \)}
+Probability of One-Point Crossover Breaking \( S_2 \):
+\[
+P_{\text{break(S2)}} = p_c \cdot \frac{\delta(S_2)}{L - 1} = p_c \cdot \frac{4}{15}.
+\]
 
-- Mutation survival probability:
-    \[
-    P_{\text{survive, mutation}} = 1 - P_{\text{break(S1, mutation)}} = (1 - p_m)^3.
-    \]
+Probability of Mutation Breaking \( S_2 \):
+\[
+P_{\text{break(S2)}} = 1 - (1 - p_m)^{o(S_2)} = 1 - (1 - p_m)^4.
+\]
 
-- Combined survival probability (assuming independence):
-    \[
-    P_{\text{survive(S1)}} = P_{\text{survive, crossover}} \cdot P_{\text{survive, mutation}}.
-    \]
-    Substituting:
-    \[
-    P_{\text{survive(S1)}} = \left( 1 - p_c \cdot \frac{5}{14} \right) \cdot (1 - p_m)^3.
-    \]
+Probability of surviving both crossover and mutation for \( S_2 \):
+\[
+P_{\text{survive(S2)}} = \left( 1 - p_c \cdot \frac{4}{15} \right) \cdot (1 - p_m)^4.
+\]
 
----
+\subsection*{1.f Are \( S_1 \) or \( S_2 \) Building Blocks?}
+A building block is a short, low-order, high-fitness schema that contributes positively to the overall fitness of individuals when combined with other building blocks.
+While both \( S_1 \) and \( S_2 \) are short and low-order, their contribution to overall fitness is unknown.
+Thus, \( S_1 \) and \( S_2 \) could be building blocks if they exhibit high fitness or are part of a broader solution.
 
-### **(e) Answer for \( S_2 \)**
-Repeat the calculations for \( S_2 = ********10*11*** \), with \( o(S_2) = 4 \) and \( \delta(S_2) = 4 \):
+\section*{Question 2}
+\subsection*{Fitness sharing}
+The hoped-for distribution is proportional to the raw fitness values of the peaks, meaning peaks with higher fitness will attract proportionally more individuals.
+For 5 local optima of fitness values 10, 20, 30, 40, 50, the proportion of individuals attracted to Peak \( i \) with peak fitness \( f_i \) is:
+\[
+\frac{f_i}{\sum_{j=1}^{5} f_j} = \frac{f_i}{150}.
+\]
+With a population of 1500, the approximate number of individuals attracted to each peak is:
+\[
+\frac{f_i}{150} \cdot 1500 \rightarrow \left[150, 300, 450, 600, 750\right].
+\]
 
-- **Probability of crossover breaking \( S_2 \):**
-    \[
-    P_{\text{break(S2, crossover)}} = p_c \cdot \frac{\delta(S_2)}{L - 1} = p_c \cdot \frac{4}{14}.
-    \]
+\subsection*{Deteministic crowding}
+Deterministic crowding tries to maintain diversity by making individuals compete locally. 
+The results generally leads to a roughly equal distribution of individuals among the peaks due to lack of global fitness comparison.
+With a population of 1500, the approximate number of individuals attracted to each peak is:
+\[
+\frac{1500}{5} \rightarrow \left[300, 300, 300, 300, 300\right].
+\]
 
-- **Probability of mutation breaking \( S_2 \):**
-    \[
-    P_{\text{break(S2, mutation)}} = 1 - (1 - p_m)^4.
-    \]
-
-- **Probability of \( S_2 \) surviving both crossover and mutation:**
-    \[
-    P_{\text{survive(S2)}} = \left( 1 - p_c \cdot \frac{4}{14} \right) \cdot (1 - p_m)^4.
-    \]
-
----
-
-### **(f) Are \( S_1 \) or \( S_2 \) Building Blocks?**
-A **building block** is a short, low-order, high-fitness schema that contributes positively to the overall fitness of individuals when combined with other building blocks.
-
-- \( S_1 \) and \( S_2 \) have relatively low orders (\( o(S_1) = 3 \), \( o(S_2) = 4 \)) and short defining lengths (\( \delta(S_1) = 5 \), \( \delta(S_2) = 4 \)), which suggests they can be building blocks.
-
-- However, whether they qualify as building blocks depends on their contribution to fitness:
-    - If \( S_1 \) or \( S_2 \) corresponds to partial solutions that lead to higher fitness when combined, they are building blocks.
-    - If they do not contribute meaningfully to fitness, they are not building blocks.
-
-Thus, \( S_1 \) and \( S_2 \) **might** be building blocks if they exhibit high fitness or are part of a broader solution.
+\section*{Question 3}
 
 \end{document}
