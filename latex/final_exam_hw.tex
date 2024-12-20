@@ -126,61 +126,51 @@ With a population of 1500, the approximate number of individuals attracted to ea
 \]
 
 \section*{Question 3}
-\subsection*{When and Why Mutation Strength Should Be Increased}
+\subsection*{When and why mutation strength should be increased}
 \begin{itemize}
-    \item \textbf{Exploration in the Early Stages}:
-    \begin{enumerate}
+    \item \textbf{Exploration in the early stages}:
+    \begin{itemize}
         \item \textbf{Reason}: At the start, the search space is largely unexplored, and diversity is crucial to avoid premature convergence. A higher mutation strength allows the algorithm to explore broadly and discover promising regions of the search space.
         \item \textbf{Example}: In high-dimensional or rugged fitness landscapes, increasing mutation strength can help escape local optima and reach globally competitive solutions.
-    \end{enumerate}
-    \item \textbf{Stagnation or Premature Convergence}:
-    \begin{enumerate}
+    \end{itemize}
+    \item \textbf{Stagnation or premature convergence}:
+    \begin{itemize}
         \item \textbf{Reason}: If the population becomes homogeneous or fitness improvements stagnate, increasing mutation strength introduces variability and enables exploration of unexplored or overlooked areas.
         \item \textbf{Example}: Evolutionary strategies encountering "flat" regions (plateaus) in the fitness landscape benefit from increased step sizes (\( \sigma \)) to move toward areas with higher gradients.
-    \end{enumerate}
-    \item \textbf{Dynamic or Non-stationary Environments}:
-    \begin{enumerate}
+    \end{itemize}
+    \item \textbf{Dynamic environments}:
+    \begin{itemize}
         \item \textbf{Reason}: In dynamic problems, the optimal solution may shift over time. Increased mutation strength allows the algorithm to adapt more quickly to changes.
         \item \textbf{Example}: Optimization in a continuously changing environment, like tracking a moving target.
-    \end{enumerate}
-    \item \textbf{Highly Multimodal Problems}:
-    \begin{enumerate}
-        \item \textbf{Reason}: Problems with many local optima require larger mutations to jump between basins of attraction and avoid getting stuck.
-        \item \textbf{Example}: Solving deceptive optimization problems or tasks with rugged fitness landscapes.
-    \end{enumerate}
+    \end{itemize}
 \end{itemize}
 
-\subsection*{When and Why Mutation Strength Should Be Decreased}
+\subsection*{When and why mutation strength should be decreased}
 \begin{itemize}
-    \item \textbf{Exploitation in the Later Stages}:
-    \begin{enumerate}
+    \item \textbf{Exploitation and fine-tune in the later stages}:
+    \begin{itemize}
         \item \textbf{Reason}: As the population converges toward an optimum, fine-tuning is needed to refine solutions. A lower mutation strength reduces the risk of overshooting and enables gradual improvements.
-        \item \textbf{Example}: Decreasing \( \sigma \) in evolution strategies near the global optimum to perform a more localized search.
-    \end{enumerate}
-    \item \textbf{High Selection Pressure}:
-    \begin{enumerate}
+        \item \textbf{Example}: Decreasing mutation strength near the global optimum to perform a more localized search.
+    \end{itemize}
+    \item \textbf{High selection pressure}:
+    \begin{itemize}
         \item \textbf{Reason}: When the selection pressure is high (e.g., only the fittest individuals survive), excessive mutation can disrupt well-performing solutions. Lower mutation strength helps maintain the quality of solutions.
         \item \textbf{Example}: Genetic algorithms with strong elitism.
-    \end{enumerate}
-    \item \textbf{When the Search Space Is Small or Simple}:
-    \begin{enumerate}
-        \item \textbf{Reason}: In small or low-dimensional search spaces, large mutations are more likely to result in unfit solutions. Decreasing mutation strength ensures the algorithm stays within promising regions.
+    \end{itemize}
+    \item \textbf{Highly constrained search spaces}:
+    \begin{itemize}
+        \item \textbf{Reason}: In highly constrained problems, large mutations are more likely to result in infeasible solutions.
+        Decreasing mutation strength ensures the algorithm stays within promising regions.
         \item \textbf{Example}: Optimizing parameters with narrow ranges.
-    \end{enumerate}
-    \item \textbf{Near Optimal Solutions}:
-    \begin{enumerate}
-        \item \textbf{Reason}: Close to the optimum, large mutations may cause solutions to oscillate or degrade. Reducing mutation strength ensures a stable, precise search.
-        \item \textbf{Example}: Fine-tuning hyperparameters of a machine learning model where performance is sensitive to small changes.
-    \end{enumerate}
+    \end{itemize}
 \end{itemize}
 
-\subsection*{Balancing Mutation Strength Dynamically}
-A dynamic adjustment of mutation strength throughout the evolutionary process is often the most effective strategy. Common approaches include:
+\subsection*{Dynamic mutation strength}
+A dynamic adjustment of mutation strength throughout the evolutionary process is often the most effective strategy, achieving a balance between exploration and exploitation based on the current state of the population and the problem landscape. Common approaches include:
 \begin{itemize}
-    \item \textbf{Adaptive Mutation}: Adjust mutation strength based on feedback, such as improvement rates in fitness.
-    \item \textbf{Self-Adaptive Mutation}:Encode mutation strength as part of the individual's genome and let evolution determine optimal values.
-    \item \textbf{Annealing Strategies}:Gradually decrease mutation strength over generations, balancing exploration early and exploitation later.
+    \item \textbf{Annealing strategies}:Gradually decrease mutation strength over generations, balancing exploration early and exploitation later.
+    \item \textbf{Adaptive mutation}: Adjust mutation strength based on feedback, such as improvement rates in fitness.
+    \item \textbf{Self-adaptive mutation}:Encode mutation strength as part of the individual's genome and let evolution determine optimal values.
 \end{itemize}
 
-Dynamic or adaptive mutation strategies can effectively combine these principles, making the algorithm robust to varying problem characteristics and stages of optimization.
 \end{document}
