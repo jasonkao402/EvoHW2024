@@ -5,7 +5,7 @@ import heapq
 import itertools
 from tqdm import trange, tqdm
 # 設定隨機種子以便於重現結果
-N = 100
+N = 64
 np.random.seed(42)
 plt.figure(figsize=(17, 8))
 # 隨機生成城市位置
@@ -70,16 +70,17 @@ def init_population(pop_size, n_cities):
     return population
 
 # 選擇操作，基於適應度
-def selection(population: list[np.ndarray], distance_matrix, keepPercent=0.1) -> list[np.ndarray]:
-    fitness_scores = []
-    for route in population:
-        fitness_scores.append(1 / calculate_total_distance(route, distance_matrix))
+def selection(population: list[np.ndarray], distance_matrix, keepPercent=0.1, tournament_size=5) -> list[np.ndarray]:
+    selected = []
+    num_to_select = int(keepPercent * len(population))
     
-    total_fitness = sum(fitness_scores)
-    prob_distribution = [fitness / total_fitness for fitness in fitness_scores]
+    for _ in range(num_to_select):
+        tournament = random.sample(population, tournament_size)
+        tournament_fitness = [calculate_total_distance(route, distance_matrix) for route in tournament]
+        winner = tournament[np.argmin(tournament_fitness)]
+        selected.append(winner)
     
-    selected_idx = np.random.choice(len(population), size=int(keepPercent * len(population)), replace=False, p=prob_distribution)
-    return [population[i] for i in selected_idx]
+    return selected
 
 # 使用Edge Recombination進行交叉操作
 def edge_recombination(parent1, parent2):
@@ -188,7 +189,8 @@ def genetic_algorithm(distance_matrix, lBound, pop_size=200, generations=500, mu
     best_distance = float('inf')
     best_history = []
     plt.ion()  # 打開交互模式
-    for generation in trange(generations):
+    ttt = trange(generations)
+    for generation in ttt:
         new_population = []
         selected = selection(population, distance_matrix, keepPercent)
         for i in range(pop_size - len(selected)):
@@ -212,6 +214,7 @@ def genetic_algorithm(distance_matrix, lBound, pop_size=200, generations=500, mu
             best_route = current_best_route
 
         best_history.append(best_distance)
+        ttt.set_description(f"Best Dist: {best_distance:9.3f}")
         # 每10代打印最佳距離並畫出路徑
         if (generation + 1) % 5 == 0:
             text = f"Generation {generation + 1:4d}/{generations:4d}: Best Distance = {best_distance:.6f}"
