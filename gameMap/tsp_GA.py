@@ -181,7 +181,7 @@ def plot_route(route, text, history):
     plt.pause(0.001)
 
 # 遺傳算法主函數
-def genetic_algorithm(distance_matrix, lBound, pop_size=200, generations=500, mutation_rate=0.9, keepPercent=0.25):
+def genetic_algorithm(distance_matrix, lBound, pop_size=200, generations=500, mutation_rate=0.5, keepPercent=0.25):
     # 初始化種群
     population = init_population(pop_size, N)
     # print(population.shape)
